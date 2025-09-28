@@ -1,3 +1,6 @@
+This project integrates [Whisper + Diarization](https://github.com/rafaelgalle/whisper-diarization-advanced) 
+developed by [Rafael Galle](https://github.com/rafaelgalle) for speaker diarization 
+(identifying who spoke when in an audio file).
 # Whisper Diarization Advanced
 
 **Ultra-fast, customizable speech-to-text and speaker diarization for noisy, multi-speaker audio. Includes advanced noise reduction, stereo channel support, and flexible audio preprocessing—ideal for call centers, meetings, and podcasts**
@@ -121,4 +124,5 @@ Noise reduction is mainly used to improve pause-time detection. Sometimes, backg
 ---
 
 **Ready to get started? Try it now on Replicate.com and experience the fastest, most customizable speech diarization for your audio!**
+
 
