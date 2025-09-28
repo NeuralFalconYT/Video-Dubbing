@@ -101,8 +101,7 @@ class WhisperDiarizationPipeline:
             "-acodec", "pcm_s16le", "-ar", "16000",
             # "-acodec", "pcm_s16le", "-ac", "1", "-ar", "16000",
             processed_path
-        ], check=True)
-
+        ], check=True,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return processed_path, temp_dir
 
     def predict(
@@ -476,3 +475,4 @@ class WhisperDiarizationPipeline:
             merged_segments.append(current)
 
         return merged_segments
+
