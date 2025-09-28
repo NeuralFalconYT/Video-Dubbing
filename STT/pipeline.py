@@ -17,6 +17,7 @@ from faster_whisper import WhisperModel
 from pyannote.audio import Pipeline as PyannotePipeline
 from faster_whisper.vad import VadOptions
 from preprocess import preprocess_audio
+from hf_downloader import download_model
 
 class Output:
     def __init__(self, segments: List[Dict], language: Optional[str] = None, num_speakers: Optional[int] = None):
@@ -36,16 +37,37 @@ class WhisperDiarizationPipeline:
         """Load models into memory."""
 
         print(f"DEBUG --> Setup with {model_name}, {device}, {compute_type}")
-        self.model = WhisperModel(
-            model_name,
+        try:
+          self.model = WhisperModel(
+              model_name,
+              device=device,
+              compute_type=compute_type,
+          )
+        except:
+          # skip google colab hugging face authentication problem 
+          if model_name=="deepdml/faster-whisper-large-v3-turbo-ct2":
+            model_dir = download_model(
+            "deepdml/faster-whisper-large-v3-turbo-ct2",
+            download_folder="./",
+            redownload=False
+              )
+          self.model = WhisperModel(
+            model_dir,
             device=device,
             compute_type=compute_type,
-        )
+            )
+            
         token = os.getenv("HF_AUTH_TOKEN", "TOKEN_HERE")
-        self.diarization_model = PyannotePipeline.from_pretrained(
-            "pyannote/speaker-diarization-3.1",
-            use_auth_token=token,
-        ).to(torch.device(device))
+        try:
+          self.diarization_model = PyannotePipeline.from_pretrained(
+              "pyannote/speaker-diarization-3.1",
+              use_auth_token=token,
+          ).to(torch.device(device))
+        except:
+          # skip google colab hugging face authentication problem 
+          self.diarization_model = PyannotePipeline.from_pretrained(
+              "fatymatariq/speaker-diarization-3.1"
+          ).to(torch.device(device))
 
     def _get_file(self, file_path=None, file_url=None, file_string=None) -> str:
         """
