@@ -174,7 +174,13 @@ def ui1():
         with gr.Row():
             with gr.Column():
                 upload_media = gr.File(label="Upload Audio or Video File")
-                number_of_speakers=gr.Slider(0, 10,label="Number of Speakers [ 0 mean auto-detect ]",value=0)
+                number_of_speakers = gr.Slider(
+                        minimum=0,
+                        maximum=10,
+                        value=0,
+                        step=1,
+                        label="Number of Speakers [0 means auto-detect]"
+                    )
                 input_lang = gr.Dropdown(label="Source Language", choices=source_lang_list, value="English")
                 generate_btn = gr.Button("🚀 Generate Transcription", variant="primary")
                 with gr.Accordion("⚙️ Translation using Google Translator", open=False):
