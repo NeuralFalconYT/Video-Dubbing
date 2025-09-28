@@ -1,3 +1,7 @@
+**Run on Colab:**  
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/NeuralFalconYT/Video-Dubbing/blob/main/STT/colab.ipynb)
+
+
 This project integrates [Whisper + Diarization](https://github.com/rafaelgalle/whisper-diarization-advanced) 
 developed by [Rafael Galle](https://github.com/rafaelgalle) for speaker diarization 
 (identifying who spoke when in an audio file).
@@ -124,5 +128,6 @@ Noise reduction is mainly used to improve pause-time detection. Sometimes, backg
 ---
 
 **Ready to get started? Try it now on Replicate.com and experience the fastest, most customizable speech diarization for your audio!**
+
 
 
