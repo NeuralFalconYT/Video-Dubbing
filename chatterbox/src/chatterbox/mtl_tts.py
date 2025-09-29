@@ -17,6 +17,49 @@ from .models.tokenizers import MTLTokenizer
 from .models.voice_encoder import VoiceEncoder
 from .models.t3.modules.cond_enc import T3Cond
 
+import os 
+import requests
+import urllib.request
+import urllib.error
+from tqdm.auto import tqdm
+
+def download_file(url, download_file_path, redownload=False):
+    """Download a single file with urllib and a tqdm progress bar."""
+    base_path = os.path.dirname(download_file_path)
+    os.makedirs(base_path, exist_ok=True)
+
+    if os.path.exists(download_file_path):
+        if redownload:
+            os.remove(download_file_path)
+            tqdm.write(f"♻️ Redownloading: {os.path.basename(download_file_path)}")
+        elif os.path.getsize(download_file_path) > 0:
+            tqdm.write(f"✔️ Skipped (already exists): {os.path.basename(download_file_path)}")
+            return True
+
+    try:
+        request = urllib.request.urlopen(url)
+        total = int(request.headers.get('Content-Length', 0))
+    except urllib.error.URLError as e:
+        print(f"❌ Error: Unable to open URL: {url}")
+        print(f"Reason: {e.reason}")
+        return False
+
+    with tqdm(total=total, desc=os.path.basename(download_file_path), unit='B', unit_scale=True, unit_divisor=1024) as progress:
+        try:
+            urllib.request.urlretrieve(
+                url,
+                download_file_path,
+                reporthook=lambda count, block_size, total_size: progress.update(block_size)
+            )
+        except urllib.error.URLError as e:
+            print(f"❌ Error: Failed to download {url}")
+            print(f"Reason: {e.reason}")
+            return False
+
+    tqdm.write(f"⬇️ Downloaded: {os.path.basename(download_file_path)}")
+    return True
+
+
 
 REPO_ID = "ResembleAI/chatterbox"
 
@@ -192,16 +235,25 @@ class ChatterboxMultilingualTTS:
 
     @classmethod
     def from_pretrained(cls, device: torch.device) -> 'ChatterboxMultilingualTTS':
-        ckpt_dir = Path(
-            snapshot_download(
-                repo_id=REPO_ID,
-                repo_type="model",
-                revision="main", 
-                allow_patterns=["ve.pt", "t3_mtl23ls_v2.safetensors", "s3gen.pt", "grapheme_mtl_merged_expanded_v1.json", "conds.pt", "Cangjie5_TC.json"],
-                token=os.getenv("HF_TOKEN"),
-            )
-        )
-        return cls.from_local(ckpt_dir, device)
+        try:
+          ckpt_dir = Path(
+              snapshot_download(
+                  repo_id=REPO_ID,
+                  repo_type="model",
+                  revision="main", 
+                  allow_patterns=["ve.pt", "t3_mtl23ls_v2.safetensors", "s3gen.pt", "grapheme_mtl_merged_expanded_v1.json", "conds.pt", "Cangjie5_TC.json"],
+                  token=os.getenv("HF_TOKEN"),
+              )
+          )
+          model_folder=cls.from_local(ckpt_dir, device)
+        except:
+          #avoid Google Colab HF_TOKEN not found error
+          for fpath in ["ve.pt", "t3_mtl23ls_v2.safetensors", "s3gen.pt", "grapheme_mtl_merged_expanded_v1.json", "conds.pt", "Cangjie5_TC.json"]:
+            url=f"https://huggingface.co/ResembleAI/chatterbox/resolve/main/{fpath}"
+            local_path=f"./chatterbox_model/{fpath}"
+            download_file(url,local_path)
+            model_folder=cls.from_local(Path(local_path).parent, device)
+        return model_folder
     
     def prepare_conditionals(self, wav_fpath, exaggeration=0.5):
         ## Load reference wav
