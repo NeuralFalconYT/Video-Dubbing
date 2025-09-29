@@ -208,14 +208,16 @@ def whisper_subtitle(uploaded_file, source_language):
     # 1. Configure device and model
     device = "cuda" if torch.cuda.is_available() else "cpu"
     compute_type = "float16" if torch.cuda.is_available() else "int8"
-    model_dir = download_model(
-        "deepdml/faster-whisper-large-v3-turbo-ct2",
-        download_folder="./",
-        redownload=False
-    )
-    model = WhisperModel(model_dir, device=device, compute_type=compute_type)
-    # model = WhisperModel("deepdml/faster-whisper-large-v3-turbo-ct2",device=device, compute_type=compute_type)
-
+    try:
+        model = WhisperModel("deepdml/faster-whisper-large-v3-turbo-ct2",device=device, compute_type=compute_type)
+    except:
+        print("💀 Avoid Google Colab HF_TOKEN not found error")
+        model_dir = download_model(
+            "deepdml/faster-whisper-large-v3-turbo-ct2",
+            download_folder="./",
+            redownload=False
+        )
+        model = WhisperModel(model_dir, device=device, compute_type=compute_type)
 
     # 2. Process audio file
     audio_file_path = get_audio_file(uploaded_file)
