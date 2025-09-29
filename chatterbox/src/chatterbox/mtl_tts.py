@@ -244,16 +244,18 @@ class ChatterboxMultilingualTTS:
                   allow_patterns=["ve.pt", "t3_mtl23ls_v2.safetensors", "s3gen.pt", "grapheme_mtl_merged_expanded_v1.json", "conds.pt", "Cangjie5_TC.json"],
                   token=os.getenv("HF_TOKEN"),
               )
-          )
-          model_folder=cls.from_local(ckpt_dir, device)
+          )  
         except:
           #avoid Google Colab HF_TOKEN not found error
+          print("💀 Avoid Google Colab HF_TOKEN not found error")
+          curr_dir = os.getcwd()
+          ckpt_dir = Path(curr_dir) / "chatterbox_model"
           for fpath in ["ve.pt", "t3_mtl23ls_v2.safetensors", "s3gen.pt", "grapheme_mtl_merged_expanded_v1.json", "conds.pt", "Cangjie5_TC.json"]:
             url=f"https://huggingface.co/ResembleAI/chatterbox/resolve/main/{fpath}"
-            local_path=f"./chatterbox_model/{fpath}"
+            local_path = ckpt_dir / fpath
             download_file(url,local_path)
-            model_folder=cls.from_local(Path(local_path).parent, device)
-        return model_folder
+              
+        return cls.from_local(ckpt_dir, device)
     
     def prepare_conditionals(self, wav_fpath, exaggeration=0.5):
         ## Load reference wav
