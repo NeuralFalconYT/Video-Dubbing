@@ -5,7 +5,7 @@ from typing import Union, Optional, List
 
 logger = logging.getLogger(__name__)
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import torch
 import torch.nn.functional as F
 from torch import nn, Tensor
@@ -332,6 +332,7 @@ class T3(nn.Module):
 
         # ---- Generation Loop using kv_cache ----
         for i in tqdm(range(max_new_tokens), desc="Sampling", dynamic_ncols=True):
+        # for i in range(max_new_tokens):
             logits_step = output.logits[:, -1, :]                
             # CFG combine  → (1, V)
             cond   = logits_step[0:1, :]
