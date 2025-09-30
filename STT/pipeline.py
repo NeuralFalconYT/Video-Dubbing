@@ -37,26 +37,21 @@ class WhisperDiarizationPipeline:
         """Load models into memory."""
 
         print(f"DEBUG --> Setup with {model_name}, {device}, {compute_type}")
-        try:
+        if model_name=="deepdml/faster-whisper-large-v3-turbo-ct2":
+          model_dir = download_model(
+                "deepdml/faster-whisper-large-v3-turbo-ct2",
+                download_folder="./",
+                redownload=False)
           self.model = WhisperModel(
-              model_name,
-              device=device,
-              compute_type=compute_type,
-          )
-        except:
-          # skip google colab hugging face authentication problem 
-          if model_name=="deepdml/faster-whisper-large-v3-turbo-ct2":
-            model_dir = download_model(
-            "deepdml/faster-whisper-large-v3-turbo-ct2",
-            download_folder="./",
-            redownload=False
+                model_dir,
+                device=device,
+                compute_type=compute_type)
+        else:
+          self.model = WhisperModel(
+                  model_name,
+                  device=device,
+                  compute_type=compute_type,
               )
-          self.model = WhisperModel(
-            model_dir,
-            device=device,
-            compute_type=compute_type,
-            )
-            
         token = os.getenv("HF_AUTH_TOKEN", "TOKEN_HERE")
         try:
           self.diarization_model = PyannotePipeline.from_pretrained(
@@ -475,4 +470,5 @@ class WhisperDiarizationPipeline:
             merged_segments.append(current)
 
         return merged_segments
+
 
