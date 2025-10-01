@@ -60,6 +60,7 @@ class WhisperDiarizationPipeline:
           ).to(torch.device(device))
         except:
           # skip google colab hugging face authentication problem 
+          print("Google Colab Wants Huggingface Token 🤬")
           self.diarization_model = PyannotePipeline.from_pretrained(
               "fatymatariq/speaker-diarization-3.1"
           ).to(torch.device(device))
@@ -470,5 +471,6 @@ class WhisperDiarizationPipeline:
             merged_segments.append(current)
 
         return merged_segments
+
 
 
