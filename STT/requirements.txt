@@ -5,10 +5,11 @@ faster-whisper==1.1.1
 ctranslate2==4.5.0
 torchvision>=0.15.2
 torchtext>=0.15.2
-numpy==1.26.4
 tenacity
 pandas
 scipy>=1.15.3
 noisereduce>=3.0.3
 deep_translator==1.11.4
 gradio>=5.9.1
+numpy==1.26.4
+
