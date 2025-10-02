@@ -11,3 +11,4 @@ pandas
 scipy>=1.15.3
 noisereduce>=3.0.3
 deep_translator==1.11.4
+gradio>=5.9.1
