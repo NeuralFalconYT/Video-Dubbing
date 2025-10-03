@@ -1,5 +1,5 @@
 """Speech-to-text + diarization pipeline (shared by local & Cog)."""
-%cd /content/Video-Dubbing/STT
+# %cd /content/Video-Dubbing/STT
 from __future__ import annotations
 import base64
 import subprocess
@@ -622,3 +622,4 @@ class WhisperDiarizationPipeline:
 
 # print("What Final result")
 # print(transcript.strip())
+
