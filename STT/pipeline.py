@@ -1,4 +1,5 @@
 """Speech-to-text + diarization pipeline (shared by local & Cog)."""
+%cd /content/Video-Dubbing/STT
 from __future__ import annotations
 import base64
 import subprocess
@@ -18,6 +19,66 @@ from pyannote.audio import Pipeline as PyannotePipeline
 from faster_whisper.vad import VadOptions
 from preprocess import preprocess_audio
 from hf_downloader import download_model
+
+
+
+import os
+from pydub import AudioSegment
+import subprocess
+
+def convert_to_mono(media_file):
+    # Extract folder, base name, and extension
+    folder, filename = os.path.split(media_file)
+    name, ext = os.path.splitext(filename)
+
+    # Handle extension properly
+    ext = ext.lower()
+    if ext not in [".mp3", ".wav", ".mp4"]:
+        return media_file  # unsupported file type → return original
+
+    # Build output path with same folder, but "_mono" before extension
+    temp_file = os.path.join(folder, f"{name}_mono{'.mp3' if ext == '.mp4' else ext}")
+
+    # Case 1: If it's a video (.mp4), extract audio and convert to mono -> mp3
+    if ext == ".mp4":
+        print("Detected MP4 video. Extracting audio and converting to mono...")
+        try:
+            cmd = [
+                "ffmpeg",
+                "-i", media_file,
+                "-ac", "1",       # force mono
+                "-y",             # overwrite if exists
+                temp_file
+            ]
+            subprocess.run(
+                              cmd,
+                              check=True,
+                              stdout=subprocess.DEVNULL,
+                              stderr=subprocess.DEVNULL
+                          )
+        except subprocess.CalledProcessError:
+            print("FFmpeg failed, returning original video file.")
+            return media_file  # return original video file if ffmpeg fails
+
+    # Case 2: If it's an audio file (.mp3 or .wav)
+    else:
+        try:
+            audio = AudioSegment.from_file(media_file)
+            if audio.channels > 1:
+                print(f"Audio has {audio.channels} channels. Converting to mono...")
+                audio = audio.set_channels(1)
+                audio.export(temp_file, format=ext[1:])  # keep original format
+            else:
+                print("Audio is already mono. Copying to temp file...")
+                audio.export(temp_file, format=ext[1:])
+        except Exception as e:
+            print(f"Error processing audio: {e}")
+            return media_file  # fallback → return original file
+
+    return temp_file
+
+
+
 
 class Output:
     def __init__(self, segments: List[Dict], language: Optional[str] = None, num_speakers: Optional[int] = None):
@@ -59,7 +120,7 @@ class WhisperDiarizationPipeline:
               use_auth_token=token,
           ).to(torch.device(device))
         except:
-          # skip google colab hugging face authentication problem 
+          # skip google colab hugging face authentication problem
           print("Google Colab Wants Huggingface Token 🤬")
           self.diarization_model = PyannotePipeline.from_pretrained(
               "fatymatariq/speaker-diarization-3.1"
@@ -118,6 +179,10 @@ class WhisperDiarizationPipeline:
     ) -> Output:
         """Run a single prediction on the model."""
         temp_input, temp_dir = self._get_file(file_path, file_url, file_string)
+        # Convert to mono because sometime Sterio audio gives errors
+        mono_audio = convert_to_mono(temp_input)
+        temp_input=mono_audio
+
 
         try:
             num_channels = self._get_audio_channels(temp_input)
@@ -138,7 +203,7 @@ class WhisperDiarizationPipeline:
                     audio_for_model = temp_processed
                 else:
                     audio_for_model = temp_input
-            
+
                 print(f"DEBUG --> Starting transcribing mono")
                 segments, detected_num_speakers, detected_language = self.speech_to_text(
                     audio_for_model, num_speakers, prompt or "", language, translate
@@ -169,7 +234,7 @@ class WhisperDiarizationPipeline:
                 else:
                     ch1_proc = ch1_path
                     ch2_proc = ch2_path
-                
+
                 print(f"DEBUG --> Starting transcribing stereo channel 0")
                 # ch1_segments, info1 = self._transcribe_audio_ch0_mock(ch1_proc, language, prompt or "", translate)
                 ch1_segments, info1 = self._transcribe_audio(ch1_proc, language, prompt or "", translate)
@@ -187,7 +252,7 @@ class WhisperDiarizationPipeline:
                     for w in s["words"]:
                         w["speaker"] = "SPEAKER_01"
                 # print(f"DEBUG --> Transcription stereo channel 1 {ch2_segments}")
-                        
+
                 print(f"DEBUG --> Merging segments")
                 # all_segments = sorted(ch1_segments + ch2_segments, key=lambda x: x["start"])
                 all_segments = self.merge_stereo_words(ch1_segments, ch2_segments)
@@ -240,16 +305,27 @@ class WhisperDiarizationPipeline:
             audio_file_wav, language, prompt, translate
         )
         print(f"DEBUG --> Finished transcribing, {len(segments)} segments")
-
+        # debug_segmetns=list(segments)
+        # raw_text=""
+        # for i in  debug_segmetns:
+        #   raw_text+=i['text']+"\n"
+        # print(f"DEBUG --> What faster whisper got ")
+        # print(raw_text)
         print("DEBUG --> Starting diarization")
         # diarization, detected_num_speakers = self._diarize_audio_mock(
         diarization, detected_num_speakers = self._diarize_audio(
             audio_file_wav, num_speakers
         )
         print(f"DEBUG --> Finished diarization, {detected_num_speakers} speakers detected")
-        
+
         print("DEBUG --> Starting merging segments with speaker info")
         final_segments = self._merge_segments_with_diarization(segments, diarization)
+        # debug_final_segments=list(final_segments)
+        # after_speaker_find_text=""
+        # for i in debug_final_segments:
+        #   after_speaker_find_text+= i['text'] + "\n"
+        # print(f"DEBUG --> after_merge_segments_with_diarization")
+        # print(after_speaker_find_text)
         print("DEBUG --> Segments merged and cleaned")
 
         return final_segments, detected_num_speakers, transcript_info.language
@@ -258,12 +334,12 @@ class WhisperDiarizationPipeline:
         options = dict(
             language=language,
             beam_size=5,
-            vad_filter=True,
+            vad_filter=True, # False
             vad_parameters=VadOptions(
                 max_speech_duration_s=self.model.feature_extractor.chunk_length,
                 min_speech_duration_ms=100,
                 speech_pad_ms=100,
-                threshold=0.25,
+                threshold=0.25,# 0.15
                 neg_threshold=0.2,
             ),
             word_timestamps=True,
@@ -292,7 +368,7 @@ class WhisperDiarizationPipeline:
             for s in segments
         ]
         return segments, transcript_info
- 
+
     def _diarize_audio(self, audio_file_wav, num_speakers=None):
         waveform, sample_rate = torchaudio.load(audio_file_wav)
         diarization = self.diarization_model(
@@ -358,6 +434,33 @@ class WhisperDiarizationPipeline:
 
         return final_segments
 
+    # def _group_segments(self, segments):
+    #     if not segments:
+    #         return []
+
+    #     grouped_segments = []
+    #     current_group = segments[0].copy()
+    #     sentence_end_pattern = r"[.!?]+"
+
+    #     for segment in segments[1:]:
+    #         time_gap = segment["start"] - current_group["end"]
+    #         current_duration = current_group["end"] - current_group["start"]
+    #         can_combine = (
+    #             segment["speaker"] == current_group["speaker"]
+    #             and time_gap <= 1.0
+    #             and current_duration < 30.0
+    #             and not re.search(sentence_end_pattern, current_group["text"][-1:])
+    #         )
+    #         if can_combine:
+    #             current_group["end"] = segment["end"]
+    #             current_group["text"] += " " + segment["text"]
+    #         else:
+    #             grouped_segments.append(current_group)
+    #             current_group = segment.copy()
+
+    #     grouped_segments.append(current_group)
+    #     return grouped_segments
+
     def _group_segments(self, segments):
         if not segments:
             return []
@@ -378,13 +481,14 @@ class WhisperDiarizationPipeline:
             if can_combine:
                 current_group["end"] = segment["end"]
                 current_group["text"] += " " + segment["text"]
+                # <<< FIX IS HERE >>>
+                current_group["words"].extend(segment["words"])
             else:
                 grouped_segments.append(current_group)
                 current_group = segment.copy()
 
         grouped_segments.append(current_group)
         return grouped_segments
-
     def _get_audio_channels(self, file_path: str) -> int:
         """Identify the number of audio channels using ffprobe."""
         result = subprocess.run(
@@ -411,9 +515,9 @@ class WhisperDiarizationPipeline:
             "ffmpeg", "-y", "-i", file_path, "-map_channel", "0.0.1",
             "-acodec", "pcm_s16le", "-ac", "1", "-ar", "16000", ch2_path
         ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    
+
         return ch1_path, ch2_path
-                
+
     def merge_stereo_words(self, ch1_segments, ch2_segments, overlap_tolerance=0, merge_margin=1):
         words = []
         for seg in ch1_segments + ch2_segments:
@@ -474,3 +578,47 @@ class WhisperDiarizationPipeline:
 
 
 
+
+
+
+# media_file="/content/video.mp4"
+# device="cuda"
+# compute_type= "float16"
+# audio_path=media_file
+# number_of_speakers=2
+# lang_code="en"
+# # Initialize Whisper + Diarization pipeline
+# pipeline = WhisperDiarizationPipeline(
+#     device=device,  # hardware to run model on
+#     compute_type=compute_type,  # model precision / speed
+#     model_name="deepdml/faster-whisper-large-v3-turbo-ct2"  # model variant
+# )
+
+# # Run prediction on the audio file
+# result = pipeline.predict(
+#     file_string=None,             # Optional: raw audio as base64 string (not used here)
+#     file_url=None,                # Optional: URL of audio file to download (not used)
+#     file_path=audio_path,  # Path to local audio file
+#     num_speakers=number_of_speakers,  # Number of speakers; None = auto-detect
+#     translate=False,              # True = convert audio to English; False = keep original language
+#     language=lang_code,                # Force transcription in a specific language; None = auto-detect
+#     prompt=None,                  # Optional text prompt for better transcription context
+#     preprocess=0,                 # Audio preprocessing level (0 = none, 1-4 = increasing filtering/denoise)
+#     highpass_freq=45,             # High-pass filter frequency (Hz) to remove low rumble
+#     lowpass_freq=8000,            # Low-pass filter frequency (Hz) to remove high-frequency noise
+#     prop_decrease=0.3,            # Noise reduction proportion (higher = more aggressive)
+#     stationary=True,              # Assume background noise is stationary (True/False)
+#     target_dBFS=-18.0             # Normalize audio loudness to this dBFS level
+# )
+# result=result.to_dict()
+# segments=[]
+# transcript=""
+# for i in result["segments"]:
+#   words=i['words']
+#   for w in words:
+#     del w["probability"]
+#     transcript+=w["word"]
+#     segments.append(w)
+
+# print("What Final result")
+# print(transcript.strip())
