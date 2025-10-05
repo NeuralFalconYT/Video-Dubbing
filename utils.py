@@ -226,7 +226,7 @@ def get_dubbing_json(raw_json, silence_threshold=0.6, max_merged_duration=10.0):
     return fixed_dubbing_json
 
 ## how to use 
-
+# from utils import get_speaker_from_media,get_dubbing_json
 # import json
 # media_file="/content/video.mp4"
 # llm_result= "{   \"1\": {          \"text\": \"An\",          \"dubbing\": \"एक\",          \"start\": 0.0,            \"end\": 11.68,          \"speaker_id\": 0           } }" # @param {type: "string"}
