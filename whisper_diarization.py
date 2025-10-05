@@ -152,7 +152,7 @@ def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
         prompt=prompt_maker(readable_json,output_lang,task)
   except Exception as e:
     print(f"Error processing media: {e}")
-
+  media_file = os.path.abspath(media_file)
   return media_file,json_transcription,readable_json,prompt
 
 
