@@ -153,7 +153,7 @@ def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
   except Exception as e:
     print(f"Error processing media: {e}")
 
-  return json_transcription,readable_json,prompt
+  return media_file,json_transcription,readable_json,prompt
 
 
 
@@ -245,5 +245,5 @@ def prompt_maker(transcription,target_language, task="Translation"):
 # output_lang="Hindi"
 # method="LLM Translation"
 # task="Translation"
-# json_transcription,readable_json,prompt=process_media(media_file,num_speakers, input_lang, output_lang,method,task)
+# media_file,json_transcription,readable_json,prompt=process_media(media_file,num_speakers, input_lang, output_lang,method,task)
 # print(prompt)
