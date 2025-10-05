@@ -1,6 +1,6 @@
-#@title  /content/Video-Dubbing/utils.py
+#@title  utils for cleaning llm json translation and get extract speakers from media file
 
-%%writefile /content/Video-Dubbing/utils.py
+# %%writefile /content/Video-Dubbing/utils.py
 
 import subprocess
 import os 
@@ -54,6 +54,8 @@ def update_speaker_speeds(dubbing_json, default_speaker_voice, default_tts_rate=
 
 
 def get_speaker_from_media(media_file,json_data):
+  if media_file is None:
+    media_file=""
   segments = sorted(json_data.values(), key=lambda x: x['start'])
   merged = []
   current_speaker, start, end = None, None, None
@@ -124,6 +126,9 @@ def get_speaker_from_media(media_file,json_data):
                              "fixed_seed":seed_num_input}
     except subprocess.CalledProcessError:
         print(f"Failed Speaker {i} audio extraction")
+        seed_num_input = random.randint(1, 999999)
+        speaker_voices[i]={"reference_audio":"",
+                             "fixed_seed":seed_num_input}
   speaker_voices=update_speaker_speeds(json_data, speaker_voices)
   return speaker_voices
 
