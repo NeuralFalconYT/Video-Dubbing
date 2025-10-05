@@ -225,6 +225,89 @@ def get_dubbing_json(raw_json, silence_threshold=0.6, max_merged_duration=10.0):
     fixed_dubbing_json=merge_short_silences(dubbing_json, silence_threshold, max_merged_duration)
     return fixed_dubbing_json
 
+import os
+from pydub import AudioSegment
+import subprocess
+import shutil
+
+def convert_to_mono(media_file):
+    folder, filename = os.path.split(media_file)
+    name, ext = os.path.splitext(filename)
+    ext = ext.lower()
+
+    # Supported formats
+    if ext not in [".mp3", ".wav", ".mp4", ".mkv"]:
+        print("Unsupported file type. Returning original file.")
+        return media_file
+
+    # Output folder
+    folder_name = "./audio_separation"
+    if os.path.exists(folder_name):
+        shutil.rmtree(folder_name)
+    os.makedirs(folder_name, exist_ok=True)
+
+    temp_file = os.path.join(folder_name, f"{name}_mono.mp3" if ext in [".mp4", ".mkv"] else f"{name}_mono{ext}")
+    safe_file = os.path.join(folder_name, "temp.mp3")
+
+    # Case 1: Video file → extract audio and convert to mono
+    if ext in [".mp4", ".mkv"]:
+        print(f"Detected video ({ext}). Extracting audio and converting to mono...")
+        try:
+            cmd = [
+                "ffmpeg",
+                "-i", media_file,
+                "-ac", "1",       # force mono
+                "-y",             # overwrite
+                safe_file
+            ]
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            shutil.copy(safe_file, temp_file)
+        except subprocess.CalledProcessError:
+            print("FFmpeg failed. Returning original file.")
+            return media_file
+
+    # Case 2: Audio file
+    else:
+        try:
+            audio = AudioSegment.from_file(media_file)
+            if audio.channels > 1:
+                print(f"Audio has {audio.channels} channels. Converting to mono...")
+                audio = audio.set_channels(1)
+            else:
+                print("Audio is already mono.")
+            audio.export(temp_file, format=ext[1:])  # remove dot
+        except Exception as e:
+            print(f"Error processing audio: {e}")
+            return media_file
+
+    return os.path.abspath(temp_file)
+
+def seperate_audio(media_file):
+  instrumental_path=""
+  vocal_path=""
+  audio_path = convert_to_mono(media_file)
+  save_dir="./audio_separation" 
+  command=f"audio-separator {audio_path} --model_filename Kim_Vocal_2.onnx --output_format mp3 --output_dir {save_dir}"
+  var=os.system(command)
+  if var==0:
+    for i in os.listdir(save_dir):
+      if "(Instrumental)" in i:
+        instrumental_path=f"{save_dir}/{i}"
+      elif "(Vocals)" in i:
+        vocal_path=f"{save_dir}/{i}"
+
+  return vocal_path,instrumental_path
+  
+def get_speakers(media_file,it_has_backgroud_music):
+  if it_has_backgroud_music:
+    vocal_path,instrumental_path=seperate_audio(media_file)
+    speaker_voice=get_speaker_from_media(media_file,json_data)
+  else:
+    speaker_voice=get_speaker_from_media(media_file,json_data)
+    vocal_path=media_file
+    instrumental_path=""
+  return speaker_voice,vocal_path,instrumental_path
+    
 ## how to use 
 # from utils import get_speaker_from_media,get_dubbing_json
 # import json
