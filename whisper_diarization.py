@@ -147,9 +147,9 @@ def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
       timestamp[sentence_number]=data
       sentence_number+=1
       readable_json = json.dumps(timestamp, indent=2, ensure_ascii=False)
-      if input_lang!=output_lang:
-        if method=="LLM Translation":
-          prompt=prompt_maker(readable_json,output_lang,task)
+      # if input_lang!=output_lang:
+      if method=="LLM Translation":
+        prompt=prompt_maker(readable_json,output_lang,task)
   except Exception as e:
     print(f"Error processing media: {e}")
 
