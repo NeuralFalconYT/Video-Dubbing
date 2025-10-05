@@ -298,7 +298,7 @@ def seperate_audio(media_file):
 
   return vocal_path,instrumental_path
   
-def get_speakers(media_file,it_has_backgroud_music):
+def get_speakers(media_file,it_has_backgroud_music,json_data):
   if it_has_backgroud_music:
     vocal_path,instrumental_path=seperate_audio(media_file)
     speaker_voice=get_speaker_from_media(media_file,json_data)
