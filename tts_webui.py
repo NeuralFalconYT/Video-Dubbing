@@ -1,6 +1,8 @@
+#@title  /content/Video-Dubbing/tts_webui.py
+
+# %%writefile /content/Video-Dubbing/tts_webui.py
 from tts import clone_voice_streaming,supported_languages
 from STT.subtitle import subtitle_maker
-#@title Chatterbox webui
 def tts_only(
               text,
               audio_prompt_path_input,
@@ -240,5 +242,10 @@ def tts_ui():
                    ],
       )
   return demo
+# demo=tts_ui()
+# demo.launch(share=True,debug=True)
+
+## How to use 
+# from tts_webui import tts_ui
 # demo=tts_ui()
 # demo.launch(share=True,debug=True)
