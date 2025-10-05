@@ -235,3 +235,15 @@ def prompt_maker(transcription,target_language, task="Translation"):
     with open(txt_path, 'r', encoding='utf-8') as f:
         content = f.read()
     return content
+
+
+## How to use 
+# from whisper_diarization import process_media
+# media_file="/content/test.mp3"
+# num_speakers=0
+# input_lang="English"
+# output_lang="Hindi"
+# method="LLM Translation"
+# task="Translation"
+# json_transcription,readable_json,prompt=process_media(media_file,num_speakers, input_lang, output_lang,method,task)
+# print(prompt)
