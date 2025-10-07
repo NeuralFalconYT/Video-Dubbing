@@ -380,3 +380,101 @@ def get_speakers(media_file,it_has_backgroud_music,json_data):
 # default_speaker_voice=get_speaker_from_media(media_file,json_data)
 # dubbing_json=get_dubbing_json(json_data, silence_threshold=0.6, max_merged_duration=10.0)
 # speaker_voice=default_speaker_voice
+
+
+
+
+
+from pydub import AudioSegment
+import os
+import subprocess
+import os
+
+
+def replace_audio_in_video(video_path, audio_path, output_path, gpu=True):
+    """
+    Replace the audio track in a video with a new audio file.
+    Returns the output path on success, or None if the command fails.
+    """
+    # Choose video codec
+    codec = "h264_nvenc" if gpu else "libx264"
+
+    command = [
+        "ffmpeg",
+        "-i", video_path,
+        "-i", audio_path,
+        "-c:v", codec,
+        "-c:a", "aac",
+        "-map", "0:v:0",
+        "-map", "1:a:0",
+        "-shortest",
+        "-y",  # overwrite output
+        output_path
+    ]
+
+    try:
+        # Run FFmpeg with output hidden
+        subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        return output_path
+    except subprocess.CalledProcessError:
+        # Return None if FFmpeg fails
+        return None
+
+
+
+def pad_audio_to_video(audio_path, video_duration_sec, output_path=None):
+    """
+    Pads the given audio with silence at the end to match video duration.
+    
+    audio_path: path to the audio file
+    video_duration_sec: duration of video in seconds
+    output_path: optional path to save padded audio
+    """
+    audio = AudioSegment.from_file(audio_path)
+    audio_duration_sec = len(audio) / 1000  # convert ms to sec
+
+    if audio_duration_sec >= video_duration_sec:
+        # Audio is already equal or longer
+        return audio_path
+
+    # Calculate required silence duration
+    silence_duration_ms = (video_duration_sec - audio_duration_sec) * 1000
+    silence = AudioSegment.silent(duration=silence_duration_ms)
+
+    # Append silence
+    padded_audio = audio + silence
+
+    # Determine output path
+    if output_path is None:
+        base, ext = os.path.splitext(audio_path)
+        output_path = f"{base}_add_silence{ext}"
+
+    # Export padded audio
+    padded_audio.export(output_path, format=os.path.splitext(output_path)[1][1:])
+    return output_path
+
+def is_video_file(file_path):
+    video_extensions = ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.webm', '.mpeg']
+    ext = os.path.splitext(file_path)[1].lower()
+    return ext in video_extensions
+
+
+def make_video(media_file,dubbed_audio_path,language="en"):
+  if is_video_file(media_file):
+      os.makedirs("./replace_audio",exist_ok=True)
+      video_duration = get_media_duration(media_file)  # in seconds
+      audio_duration = get_media_duration(dubbed_audio_path)  # in seconds
+      
+      if audio_duration < video_duration:
+          new_audio_path = pad_audio_to_video(dubbed_audio_path, video_duration)
+          # print("Padded audio saved at:", new_audio_path)
+      else:
+        new_audio_path=dubbed_audio_path
+      video_base, video_ext = os.path.splitext(os.path.basename(media_file))
+      # Create new video filename with "_dubbing" suffix
+      new_video_file = f"{video_base}_{language}_dubbing{video_ext}"
+      new_video_file=f"./replace_audio/{new_video_file}"
+      vid_save_path=replace_audio_in_video(media_file, new_audio_path, new_video_file, gpu=True)
+      # print("Video with replaced audio saved at:", new_video_file)
+      return vid_save_path
+
