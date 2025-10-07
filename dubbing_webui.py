@@ -140,7 +140,7 @@ def dubbing_ui():
                   exaggeration = gr.Slider(0.25, 2, step=.05, label="Exaggeration", value=.5)
                   cfg_weight = gr.Slider(0.2, 1, step=.05, label="CFG/Pace", value=0.5)
                   temp = gr.Slider(0.05, 5, step=.05, label="Temperature", value=.8)
-              with gr.Accordion("Video Maker", open=False):
+              with gr.Accordion("Video Maker", open=True):
                   need_video=gr.Checkbox(value=True, label="Need Video?")
 
           with gr.Column(scale=2):
