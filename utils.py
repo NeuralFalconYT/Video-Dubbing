@@ -93,7 +93,7 @@ def get_speaker_from_media(media_file,json_data):
           stdout=subprocess.DEVNULL,  # hide normal output
           stderr=subprocess.DEVNULL   # hide error/progress output
       )
-      print("Success!")
+      print("Speaker Extraction Successful")
     except subprocess.CalledProcessError:
       print("Failed Video to audio conversion")
     media_file = temp_mp3_file
@@ -376,7 +376,9 @@ def get_clean_vocal(speaker_voice):
 def get_speakers(media_file,it_has_backgroud_music,json_data):
   speaker_voice=get_speaker_from_media(media_file,json_data)
   if it_has_backgroud_music:
+    print("Start Removing Speaker's Background Music")
     get_clean_vocal(speaker_voice)
+    print("Speaker's Background Music Removal Complete")
   return speaker_voice
     
 ## how to use 
