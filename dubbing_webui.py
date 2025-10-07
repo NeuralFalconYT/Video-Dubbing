@@ -129,7 +129,7 @@ def dubbing_ui():
       with gr.Row():
           with gr.Column(scale=1):
               gr.Markdown("### ⚙️ Inputs & Settings")
-              media_file = gr.Textbox(label="Media File Path", value="/content/video.mp4",placeholder="/content/video.mp4")
+              media_file = gr.Textbox(label="Paste Media File Path",placeholder="/tmp/gradio/.....")
               language_name = gr.Dropdown(list(supported_languages.keys()), label="🌍 Select Language", value="Hindi")
               have_music = gr.Checkbox(value=False, label="Does the media file have background music?")
               want_subtitle = gr.Checkbox(value=True, label="Generate Subtitles for the dubbed audio?")
