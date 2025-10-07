@@ -56,7 +56,7 @@ def transcript_ui():
 
 
             with gr.Column():
-              media_file=gr.Textbox(label="Media File Path")
+              media_file=gr.Textbox(label="Media File Path",show_copy_button=True)
               json_file = gr.File(label="Json Transcription")
               transcript_box = gr.Textbox(label="Transcription", lines=5,max_lines=8,show_copy_button=True)
               llm_translate=gr.Textbox(
