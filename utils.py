@@ -364,7 +364,7 @@ def get_clean_vocal(speaker_voice):
 def get_speakers(media_file,it_has_backgroud_music,json_data):
   speaker_voice=get_speaker_from_media(media_file,json_data)
   if it_has_backgroud_music:
-    print("Start Removing Speaker's Background Music")
+    print("Start Removing Speaker's Background Music ... ")
     get_clean_vocal(speaker_voice)
     print("Speaker's Background Music Removal Complete")
   return speaker_voice
