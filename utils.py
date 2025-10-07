@@ -297,17 +297,90 @@ def seperate_audio(media_file):
         vocal_path=f"{save_dir}/{i}"
 
   return vocal_path,instrumental_path
-  
+
+
+
+
+from pydub import AudioSegment
+from librosa import get_duration
+def combine_audios(audio_files, output_path="./new.wav"):
+    if not audio_files:
+        raise ValueError("No audio files provided!")
+
+    # Load the first file
+    combined = AudioSegment.from_file(audio_files[0])
+
+    # Append the rest
+    for file_path in audio_files[1:]:
+        audio = AudioSegment.from_file(file_path)
+        combined += audio  # Concatenate
+
+    # Export to new file
+    combined.export(output_path, format="wav")
+    return output_path
+
+def seperate_audio(audio_path):
+  instrumental_path=""
+  vocal_path=audio_path
+  save_dir="./audio_separation" 
+  command=f"audio-separator {audio_path} --model_filename Kim_Vocal_2.onnx --output_format mp3 --output_dir {save_dir}"
+  var=os.system(command)
+  if var==0:
+    for i in os.listdir(save_dir):
+      if "(Instrumental)" in i:
+        instrumental_path=f"{save_dir}/{i}"
+      elif "(Vocals)" in i:
+        vocal_path=f"{save_dir}/{i}"
+
+  return vocal_path,instrumental_path
+
+def get_clean_vocal(speaker_voice):
+  start=0
+  cuts={}
+  audio_files=[]
+  for i in speaker_voice:
+    voice_path=speaker_voice[i]["reference_audio"]
+    audio_files.append(voice_path)
+    duration=get_duration(path=voice_path)
+    cuts[i]=(start,start+duration)
+    start+=duration
+    # print(duration)
+  new_audio=combine_audios(audio_files)
+  vocal_path,instrumental_path=  seperate_audio(new_audio)
+  for i in cuts:
+    output_file=speaker_voice[i]["reference_audio"]
+    start=cuts[i][0]
+    end=cuts[i][1]
+    duration=end-start
+    temp_path="./safe.mp3"
+    try:
+      subprocess.run(
+              [
+                  "ffmpeg", "-y", "-i", vocal_path,
+                  "-ss", str(start), "-t", str(duration),
+                  "-c", "copy", temp_path
+              ],
+              check=True,
+              stdout=subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL
+          )
+      shutil.copy(temp_path, output_file)
+      
+    except:
+      print(f"Error to extract speaker from clean vocal audio {output_file}")
+
+
+
+
+
 def get_speakers(media_file,it_has_backgroud_music,json_data):
+  speaker_voice=get_speaker_from_media(media_file,json_data)
   if it_has_backgroud_music:
-    vocal_path,instrumental_path=seperate_audio(media_file)
-    speaker_voice=get_speaker_from_media(media_file,json_data)
-  else:
-    speaker_voice=get_speaker_from_media(media_file,json_data)
-    vocal_path=media_file
-    instrumental_path=""
-  return speaker_voice,vocal_path,instrumental_path
+    get_clean_vocal(speaker_voice)
+  return speaker_voice
     
+## how to use 
+# from utils import get_speaker_from_media,get_dubbing_json
 ## how to use 
 # from utils import get_speaker_from_media,get_dubbing_json
 # import json
