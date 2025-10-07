@@ -24,4 +24,5 @@ sentencex==0.6.1
 soundfile==0.13.1
 pysrt==1.1.2
 gradio>=5.9.1
-audio-separator[gpu]==0.39.0
+audio-separator[gpu]==0.38.0
+
