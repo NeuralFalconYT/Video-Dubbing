@@ -41,10 +41,10 @@ def transcript_ui():
                     )
                 input_lang = gr.Dropdown(label="Source Language", choices=source_lang_list, value="English")
                 generate_btn = gr.Button("🚀 Generate Transcription", variant="primary")
-                with gr.Accordion("⚙️ Translate Parameter", open=False):
+                with gr.Accordion("⚙️ Translate Parameter", open=True):
                     method = gr.Radio(
                                       choices=["Don't Translate", "Using Google Translator", "LLM Translation"],
-                                      value="Don't Translate",
+                                      value="LLM Translation",
                                       label="Select Translate Method",
                                   )
                     output_lang = gr.Dropdown(label="Translate Into", choices=target_lang_list, value="English")
