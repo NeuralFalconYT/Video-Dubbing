@@ -102,6 +102,7 @@ def start_dubbing_ui(
         cfgw_input=cfg_weight,
         want_subtile=want_subtitle
     )
+    video_path=None
     if need_video:
       video_path=make_video(media_file,dubbed_audio_path,language_name)
 
