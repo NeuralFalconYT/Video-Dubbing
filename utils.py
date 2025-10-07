@@ -282,21 +282,6 @@ def convert_to_mono(media_file):
 
     return os.path.abspath(temp_file)
 
-def seperate_audio(media_file):
-  instrumental_path=""
-  vocal_path=""
-  audio_path = convert_to_mono(media_file)
-  save_dir="./audio_separation" 
-  command=f"audio-separator {audio_path} --model_filename Kim_Vocal_2.onnx --output_format mp3 --output_dir {save_dir}"
-  var=os.system(command)
-  if var==0:
-    for i in os.listdir(save_dir):
-      if "(Instrumental)" in i:
-        instrumental_path=f"{save_dir}/{i}"
-      elif "(Vocals)" in i:
-        vocal_path=f"{save_dir}/{i}"
-
-  return vocal_path,instrumental_path
 
 
 
@@ -323,6 +308,9 @@ def seperate_audio(audio_path):
   instrumental_path=""
   vocal_path=audio_path
   save_dir="./audio_separation" 
+  if os.path.exists(save_dir):
+    shutil.rmtree(save_dir)
+  os.makedirs(save_dir, exist_ok=True)
   command=f"audio-separator {audio_path} --model_filename Kim_Vocal_2.onnx --output_format mp3 --output_dir {save_dir}"
   var=os.system(command)
   if var==0:
