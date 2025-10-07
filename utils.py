@@ -381,6 +381,48 @@ def get_speakers(media_file,it_has_backgroud_music,json_data):
 # dubbing_json=get_dubbing_json(json_data, silence_threshold=0.6, max_merged_duration=10.0)
 # speaker_voice=default_speaker_voice
 
+def get_media_duration(media_file=None):
+    """
+    Get the exact playback duration (in seconds) of any audio or video file,
+    suitable for dubbing synchronization.
+
+    Args:
+        media_file (str): Path to the audio or video file.
+
+    Returns:
+        float: Exact duration in seconds. Returns 0.0 if file not found or error.
+    """
+    if media_file is None:
+      media_file=""
+    if not os.path.exists(media_file):
+        print(f"File not found: {media_file}")
+        return 0.0
+
+    ext = Path(media_file).suffix.lower()
+
+    # Audio formats to decode for exact duration
+    audio_exts = [".mp3", ".wav", ".flac", ".ogg", ".aac", ".m4a", ".aiff", ".aif"]
+
+    try:
+        if ext in audio_exts:
+            # Decode audio fully for exact duration
+            audio = AudioSegment.from_file(media_file)
+            return len(audio) / 1000.0  # milliseconds → seconds
+        else:
+            # For video, use ffprobe to get duration
+            cmd = [
+                "ffprobe",
+                "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                media_file
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return float(result.stdout.strip())
+    except Exception as e:
+        print(f"Error getting duration for {media_file}: {e}")
+        return 0.0
+
 
 
 
