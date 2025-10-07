@@ -499,6 +499,7 @@ def is_video_file(file_path):
     video_extensions = ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.webm', '.mpeg']
     ext = os.path.splitext(file_path)[1].lower()
     return ext in video_extensions
+from pathlib import Path
 
 
 def make_video(media_file,dubbed_audio_path,language="en"):
