@@ -63,10 +63,10 @@ def srt_to_dub(
         actual_duration = seg['duration']
         starting_silence = seg.get('starting_silence', 0)
         speaker_id = seg['speaker_id']
-        print(f"spekaker id : {speaker_id}")
-        print(f"speaker voice: {speaker_voice}")
+        # print(f"spekaker id : {speaker_id}")
+        # print(f"speaker voice: {speaker_voice}")
         spk_info = speaker_voice.get(speaker_id, {})
-        print(f"spk_info::: {spk_info}")
+        # print(f"spk_info::: {spk_info}")
         reference_audio = spk_info.get("reference_audio", "")
         fixed_seed = spk_info.get("fixed_seed", 0)
         avg_speed = spk_info.get("avg_talk_speed", 1.0)
@@ -79,13 +79,13 @@ def srt_to_dub(
             ending_silence = dubbing_json[next_id].get('starting_silence', 0)
 
         save_path = f"{temp_folder}/{segment_id}.wav"
-        print(f"text: {text}")
-        print(f"reference_audio Audio: {reference_audio}")
-        print(f"Language_name: {language_name}")
-        print(f"exaggeration_input: {exaggeration_input}")
-        print(f"temperature_input: {temperature_input}")
-        print(f"seed_num_input: {seed_num_input}")
-        print(f"cfgw_input: {cfgw_input}")
+        # print(f"text: {text}")
+        # print(f"reference_audio Audio: {reference_audio}")
+        # print(f"Language_name: {language_name}")
+        # print(f"exaggeration_input: {exaggeration_input}")
+        # print(f"temperature_input: {temperature_input}")
+        # print(f"seed_num_input: {seed_num_input}")
+        # print(f"cfgw_input: {cfgw_input}")
         raw_path = clone_voice_streaming(
                       text,
                       reference_audio,
@@ -97,7 +97,7 @@ def srt_to_dub(
                       stereo=False,
                       remove_silence=False,
                   )
-        print(raw_path)
+        # print(raw_path)
         if os.path.exists(raw_path):
           shutil.copy(raw_path,save_path)
         else:
