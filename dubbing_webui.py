@@ -26,7 +26,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text):
     dubbing_json = get_dubbing_json(llm_data)
     speaker_voice= get_speakers(media_file, have_music, llm_data)
     speaker_voice = {int(k): v for k, v in speaker_voice.items()}  # normalize
-    print("Backend generated speakers:", speaker_voice)
+    # print("Backend generated speakers:", speaker_voice)
 
     # Dynamic UI update
     speaker_updates = []
@@ -59,8 +59,8 @@ def start_dubbing_ui(
 
     # Copy default state
     updated_speaker_voice = {sid: info.copy() for sid, info in speaker_voice_state.items()}
-    print("raw updated_speaker_voice")
-    print(updated_speaker_voice)
+    # print("raw updated_speaker_voice")
+    # print(updated_speaker_voice)
     # Replace with current /tmp/gradio/... files if provided
     gradio_audio_paths=[]
     for i in speaker_audios:
@@ -81,17 +81,17 @@ def start_dubbing_ui(
             if not updated_speaker_voice[sid].get("reference_audio"):
                 updated_speaker_voice[sid]["reference_audio"] = f"./speaker_voice/{sid}.mp3"
 
-    print("✅ Final speaker voice map:", json.dumps(updated_speaker_voice, indent=2))
+    # print("✅ Final speaker voice map:", json.dumps(updated_speaker_voice, indent=2))
 
-    print(f"passing Data debug:")
-    print(f"media_file: {media_file}")
-    print(f"dubbing_json_state: {dubbing_json_state}")
-    print(f"updated_speaker_voice: {updated_speaker_voice}")
-    print(f"language_name: {language_name}")
-    print(f"exaggeration_input: {exaggeration}")
-    print(f"temperature_input: {temp}")
-    print(f"cfgw_input: {cfg_weight}")
-    print(f"want_subtitle: {want_subtitle}")
+    # print(f"passing Data debug:")
+    # print(f"media_file: {media_file}")
+    # print(f"dubbing_json_state: {dubbing_json_state}")
+    # print(f"updated_speaker_voice: {updated_speaker_voice}")
+    # print(f"language_name: {language_name}")
+    # print(f"exaggeration_input: {exaggeration}")
+    # print(f"temperature_input: {temp}")
+    # print(f"cfgw_input: {cfg_weight}")
+    # print(f"want_subtitle: {want_subtitle}")
     dubbed_audio_path, dubbed_audio_file, returned_custom_srt, returned_default_srt, returned_word_srt, returned_shorts_srt = dubbing(
         media_file=media_file,
         dubbing_json=dubbing_json_state,
