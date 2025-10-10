@@ -358,15 +358,44 @@ def get_clean_vocal(speaker_voice):
       print(f"Error to extract speaker from clean vocal audio {output_file}")
 
 
+from librosa import get_duration, load
+import soundfile as sf
+
+def fix_duration(speaker_voice, max_duration=30.0):
+    """
+    Trim reference_audio in speaker_voice dict to max_duration seconds,
+    overriding the original file.
+    """
+    for speaker_id, data in speaker_voice.items():
+        ref_path = data.get('reference_audio')
+        if not ref_path:
+            continue
+
+        # Check duration quickly without loading full audio
+        dur = get_duration(path=ref_path)
+
+        if dur > max_duration:
+            # Load the full audio only if trimming is needed
+            y, sr = load(ref_path, sr=None)
+            num_samples = int(max_duration * sr)
+            y_trimmed = y[:num_samples]
+
+            # Overwrite the original file
+            sf.write(ref_path, y_trimmed, sr)
+            print(f"[INFO] Trimmed {ref_path} from {dur:.2f}s to {max_duration}s")
+        else:
+            print(f"[INFO] {ref_path} is already under {max_duration}s ({dur:.2f}s)")
 
 
 
 def get_speakers(media_file,it_has_backgroud_music,json_data):
   speaker_voice=get_speaker_from_media(media_file,json_data)
+  fix_duration(speaker_voice, max_duration=30.0)
   if it_has_backgroud_music:
     print("Start Removing Speaker's Background Music ... ")
     get_clean_vocal(speaker_voice)
     print("Speaker's Background Music Removal Complete")
+    
   return speaker_voice
     
 ## how to use 
