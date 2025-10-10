@@ -1,8 +1,19 @@
 #@title  /content/Video-Dubbing/tts_webui.py
+# Get absolute path of the root project folder
+import sys
+import os
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # /content/Video-Dubbing
+STT_SRC = os.path.join(ROOT_DIR, "STT")
+
+# Add chatterbox/src to sys.path if not already present
+if STT_SRC not in sys.path:
+    sys.path.append(STT_SRC)
+
+print("✅ Added to sys.path:", STT_SRC)
 
 # %%writefile /content/Video-Dubbing/tts_webui.py
 from scripts.tts import clone_voice_streaming,supported_languages
-from scripts.STT.subtitle import subtitle_maker
+from subtitle import subtitle_maker
 def tts_only(
               text,
               audio_prompt_path_input,
