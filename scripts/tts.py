@@ -2,8 +2,25 @@
 # %%writefile /content/Video-Dubbing/tts.py
 import sys
 import os
-chatterbox=f"{os.getcwd()}/chatterbox/src"
-sys.path.append(chatterbox)
+# chatterbox=f"{os.getcwd()}/chatterbox/src"
+# sys.path.append(chatterbox)
+
+
+import sys
+import os
+
+# Get absolute path of the root project folder
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # /content/Video-Dubbing
+CHATTERBOX_SRC = os.path.join(ROOT_DIR, "chatterbox", "src")
+
+# Add chatterbox/src to sys.path if not already present
+if CHATTERBOX_SRC not in sys.path:
+    sys.path.append(CHATTERBOX_SRC)
+
+print("✅ Added to sys.path:", CHATTERBOX_SRC)
+
+
+
 from chatterbox.mtl_tts import ChatterboxMultilingualTTS, SUPPORTED_LANGUAGES
 import tempfile
 import random
