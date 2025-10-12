@@ -39,7 +39,7 @@ All credit for the TTS model architecture, voice cloning algorithms, and base im
 
 Perfect — since your **Video-Dubbing** project uses **AI voice cloning** (via [Chatterbox](https://github.com/resemble-ai/chatterbox)) and involves **audio dubbing / voice synthesis**, it’s important and responsible to include a **clear disclaimer** that discourages misuse and clarifies intent.
 
-Here’s a professional, open-source-friendly disclaimer you can safely include in your repository’s **README.md** (and optionally as a short legal file like `DISCLAIMER.md`):
+
 
 
 
