@@ -12,7 +12,7 @@ import os
 import json
 import uuid
 from deep_translator import GoogleTranslator
-
+from llama_translate import hunyuan_mt_translate
 LANGUAGE_CODE = {
     'Akan': 'aka', 'Albanian': 'sq', 'Amharic': 'am', 'Arabic': 'ar', 'Armenian': 'hy',
     'Assamese': 'as', 'Azerbaijani': 'az', 'Basque': 'eu', 'Bashkir': 'ba', 'Bengali': 'bn',
@@ -146,13 +146,16 @@ def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
       }
       timestamp[sentence_number]=data
       sentence_number+=1
-      readable_json = json.dumps(timestamp, indent=2, ensure_ascii=False)
+      
       # if input_lang!=output_lang:
       if method=="LLM Translation":
         prompt=prompt_maker(readable_json,output_lang,task)
   except Exception as e:
     print(f"Error processing media: {e}")
   media_file = os.path.abspath(media_file)
+  if method=="Hunyuan-MT-7B Translator":
+      timestamp=hunyuan_mt_translate(timestamp, input_lang, output_lang)
+  readable_json = json.dumps(updated_timestamp, indent=2, ensure_ascii=False)
   return media_file,json_transcription,readable_json,prompt
 
 
