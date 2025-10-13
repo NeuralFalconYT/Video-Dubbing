@@ -43,7 +43,7 @@ def transcript_ui():
                 generate_btn = gr.Button("🚀 Generate Transcription", variant="primary")
                 with gr.Accordion("⚙️ Translate Parameter", open=True):
                     method = gr.Radio(
-                                      choices=["Don't Translate", "Using Google Translator", "LLM Translation"],
+                                      choices=["Don't Translate", "Using Google Translator", "Hunyuan-MT-7B Translator","Google AI Studio"],
                                       value="LLM Translation",
                                       label="Select Translate Method",
                                   )
