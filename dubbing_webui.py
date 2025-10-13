@@ -132,7 +132,7 @@ def dubbing_ui():
               gr.Markdown("### ⚙️ Inputs & Settings")
               media_file = gr.Textbox(label="Paste Media File Path",placeholder="/tmp/gradio/.....")
               language_name = gr.Dropdown(list(supported_languages.keys()), label="🌍 Select Language", value="Hindi")
-              have_music = gr.Checkbox(value=False, label="Does the media file have background music?")
+              have_music = gr.Checkbox(value=False, label="Clean speaker voice from media file?")
               want_subtitle = gr.Checkbox(value=True, label="Generate Subtitles for the dubbed audio?")
               llm_result = gr.Textbox(label="Paste LLM Translation", max_lines=10)
               generate_speaker_btn = gr.Button("🚀 Step 1: Extract Speakers & Prepare", variant="primary")
