@@ -148,7 +148,7 @@ def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
       sentence_number+=1
       
       # if input_lang!=output_lang:
-      if method=="LLM Translation":
+      if method=="Google AI Studio":
         prompt=prompt_maker(readable_json,output_lang,task)
   except Exception as e:
     print(f"Error processing media: {e}")
