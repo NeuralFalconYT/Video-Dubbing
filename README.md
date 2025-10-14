@@ -13,7 +13,8 @@
 
 ### 4. Video Dubbing
 
-![4](https://github.com/user-attachments/assets/6e945353-8b58-4713-bca1-ad69727ed646)
+![3](https://github.com/user-attachments/assets/0fcf7b60-2af2-48c3-a173-404b4c127678)
+
 
 
 
