@@ -611,3 +611,60 @@ def make_video(media_file,dubbed_audio_path,language="en"):
       # print("Video with replaced audio saved at:", new_video_file)
       return vid_save_path
 
+
+
+
+
+import os
+import subprocess
+from pathlib import Path
+from pydub import AudioSegment
+import shutil
+
+
+def pad_or_trim(audio, target_duration_ms):
+    """Add silence or trim to match target duration."""
+    if len(audio) < target_duration_ms:
+        silence = AudioSegment.silent(duration=target_duration_ms - len(audio))
+        audio += silence
+    elif len(audio) > target_duration_ms:
+        audio = audio[:target_duration_ms]
+    return audio
+
+
+def restore_music(media_file, tts_dub_path):
+    print("🎬 Extracting background and checking durations...")
+
+    # 1️⃣ Separate vocals/background
+    vocals_path, background_path = demucs_separate_vocal_music(media_file)
+
+    # 2️⃣ Get durations (in seconds)
+    orig_duration = get_media_duration(media_file)
+    music_duration = get_media_duration(background_path)
+    tts_duration = get_media_duration(tts_dub_path)
+
+    # Convert to milliseconds for PyDub
+    orig_ms = orig_duration * 1000
+    music_ms = music_duration * 1000
+    tts_ms = tts_duration * 1000
+
+    # 3️⃣ Load audio
+    bg_audio = AudioSegment.from_file(background_path)
+    tts_audio = AudioSegment.from_file(tts_dub_path)
+
+    # 4️⃣ Pad or trim both to match original video duration
+    new_bg = pad_or_trim(bg_audio, orig_ms)
+    new_tts = pad_or_trim(tts_audio, orig_ms)
+
+    # 5️⃣ Merge (overlay voice over background)
+    mixed = new_bg.overlay(new_tts)
+
+    # 6️⃣ Save result
+    new_tts_dub_music = tts_dub_path.replace(".wav", "_music.wav")
+    mixed.export(new_tts_dub_music, format="wav")
+
+    print(f"✅ Final dubbed track saved as: {new_tts_dub_music}")
+    return new_tts_dub_music
+
+# from utils import restore_music
+# final_path = restore_music(media_file, tts_dub_path)
