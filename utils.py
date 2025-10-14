@@ -355,7 +355,7 @@ def demucs_separate_vocal_music(file_path, model_name="htdemucs_ft", output_dir=
         return file_path, None
 
     file_name = Path(file_path).stem
-    model_dir = f"{output_dir}/{model_name}/{file_name}"
+    model_dir = f"./{output_dir}/{model_name}/{file_name}"
     vocals_path = f"{model_dir}/vocals.wav"
     background_path = f"{model_dir}/no_vocals.wav"
 
