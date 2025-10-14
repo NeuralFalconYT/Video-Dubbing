@@ -148,13 +148,18 @@ def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
       sentence_number+=1
       
       # if input_lang!=output_lang:
-      if method=="Google AI Studio":
-        prompt=prompt_maker(readable_json,output_lang,task)
+      
   except Exception as e:
     print(f"Error processing media: {e}")
   media_file = os.path.abspath(media_file)
+  readable_json = json.dumps(timestamp, indent=2, ensure_ascii=False)
+  if method=="Google AI Studio":
+      prompt=prompt_maker(readable_json,output_lang,task)  
   if method=="Hunyuan-MT-7B Translator":
       timestamp=hunyuan_mt_translate(timestamp, input_lang, output_lang)
+      readable_json = json.dumps(timestamp, indent=2, ensure_ascii=False)
+
+          
   readable_json = json.dumps(timestamp, indent=2, ensure_ascii=False)
   return media_file,json_transcription,readable_json,prompt
 
