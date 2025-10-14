@@ -322,6 +322,76 @@ def seperate_audio(audio_path):
 
   return vocal_path,instrumental_path
 
+
+import os
+import shutil
+import subprocess
+from pathlib import Path
+
+def demucs_separate_vocal_music(file_path, model_name="htdemucs_ft", output_dir="separated_output"):
+    duration=get_media_duration(file_path)
+    max_duration=10*60 #10 min
+    if duration>max_duration:
+        model_name="htdemucs"
+        
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
+
+    cmd = [
+        "python", "-m", "demucs",
+        "--two-stems=vocals",
+        "-o", output_dir,
+        "-d", "cuda",
+        file_path,
+        "-n", model_name,
+    ]
+
+    print("🎧 Running Demucs...")
+    try:
+        subprocess.run(cmd, check=True)
+    except Exception as e:
+        print(f"❌ Demucs failed: {e}")
+        return file_path, None
+
+    file_name = Path(file_path).stem
+    model_dir = f"{output_dir}/{model_name}/{file_name}"
+    vocals_path = f"{model_dir}/vocals.wav"
+    background_path = f"{model_dir}/no_vocals.wav"
+
+    return vocals_path, background_path
+# vocals_path, background_path=demucs_separate_vocal_music(file_path)
+import subprocess
+from pathlib import Path
+
+def slice_audio(input_file, start_sec, duration_sec,save_path):
+    """
+    Slice any audio (WAV or MP3) and save as MP3.
+
+    Args:
+        input_file: Path to input audio (WAV or MP3)
+        start_sec: Start time in seconds
+        duration_sec: Duration in seconds
+        output_file: Path to save output MP3
+    """
+    output_file="./safe.mp3"
+    ext = Path(input_file).suffix.lower()
+    
+    cmd = ["ffmpeg", "-y", "-i", input_file, "-ss", str(start_sec), "-t", str(duration_sec)]
+    
+    # If input is WAV or anything non-MP3 → encode to MP3
+    if ext != ".mp3":
+        cmd += ["-codec:a", "libmp3lame", "-qscale:a", "2"]
+    cmd.append(output_file)
+    
+    try:
+        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print(f"✅ Created {output_file}")
+        shutil.copy(output_file,save_path)
+    except subprocess.CalledProcessError:
+        print("❌ FFmpeg failed. Check your input file and parameters.")
+        
+
 def get_clean_vocal(speaker_voice):
   start=0
   cuts={}
@@ -334,28 +404,15 @@ def get_clean_vocal(speaker_voice):
     start+=duration
     # print(duration)
   new_audio=combine_audios(audio_files)
-  vocal_path,instrumental_path=  seperate_audio(new_audio)
+  # vocal_path,instrumental_path=  seperate_audio(new_audio)
+  vocal_path,instrumental_path=demucs_separate_vocal_music(new_audio)
   for i in cuts:
     output_file=speaker_voice[i]["reference_audio"]
     start=cuts[i][0]
     end=cuts[i][1]
-    duration=end-start
-    temp_path="./safe.mp3"
-    try:
-      subprocess.run(
-              [
-                  "ffmpeg", "-y", "-i", vocal_path,
-                  "-ss", str(start), "-t", str(duration),
-                  "-c", "copy", temp_path
-              ],
-              check=True,
-              stdout=subprocess.DEVNULL,
-              stderr=subprocess.DEVNULL
-          )
-      shutil.copy(temp_path, output_file)
-      
-    except:
-      print(f"Error to extract speaker from clean vocal audio {output_file}")
+    duration_sec=end-start
+    slice_audio(vocal_path, start, duration_sec,output_file)
+    
 
 
 from librosa import get_duration, load
@@ -385,6 +442,10 @@ def fix_duration(speaker_voice, max_duration=30.0):
             print(f"[INFO] Trimmed {ref_path} from {dur:.2f}s to {max_duration}s")
         else:
             print(f"[INFO] {ref_path} is already under {max_duration}s ({dur:.2f}s)")
+
+
+
+
 
 
 
