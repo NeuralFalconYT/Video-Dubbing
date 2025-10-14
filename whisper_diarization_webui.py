@@ -44,7 +44,7 @@ def transcript_ui():
                 with gr.Accordion("⚙️ Translate Parameter", open=True):
                     method = gr.Radio(
                                       choices=["Don't Translate", "Using Google Translator", "Hunyuan-MT-7B Translator","Google AI Studio"],
-                                      value="LLM Translation",
+                                      value="Google AI Studio",
                                       label="Select Translate Method",
                                   )
                     output_lang = gr.Dropdown(label="Translate Into", choices=target_lang_list, value="English")
