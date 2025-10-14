@@ -418,7 +418,7 @@ def get_clean_vocal(speaker_voice):
 from librosa import get_duration, load
 import soundfile as sf
 
-def fix_duration(speaker_voice, max_duration=30.0):
+def fix_duration(speaker_voice, max_duration=20.0):
     """
     Trim reference_audio in speaker_voice dict to max_duration seconds,
     overriding the original file.
@@ -451,7 +451,7 @@ def fix_duration(speaker_voice, max_duration=30.0):
 
 def get_speakers(media_file,it_has_backgroud_music,json_data):
   speaker_voice=get_speaker_from_media(media_file,json_data)
-  fix_duration(speaker_voice, max_duration=30.0)
+  fix_duration(speaker_voice, max_duration=20.0)
   if it_has_backgroud_music:
     print("Start Removing Speaker's Background Music ... ")
     get_clean_vocal(speaker_voice)
