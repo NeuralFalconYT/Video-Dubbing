@@ -140,10 +140,9 @@ def dubbing_ui():
               gr.Markdown("### ⚙️ Inputs & Settings")
               media_file = gr.Textbox(label="Paste Media File Path",placeholder="/tmp/gradio/.....")
               language_name = gr.Dropdown(list(supported_languages.keys()), label="🌍 Select Language", value="Hindi")
-              have_music = gr.Checkbox(value=False, label="Clean speaker voice from media file?")
-              want_subtitle = gr.Checkbox(value=True, label="Generate Subtitles for the dubbed audio?")
+              have_music = gr.Checkbox(value=True, label="Clean speaker voice from media file?")
               llm_result = gr.Textbox(label="Paste LLM Translation", max_lines=10)
-              generate_speaker_btn = gr.Button("🚀 Step 1: Extract Speakers & Prepare", variant="primary")
+              generate_speaker_btn = gr.Button("🚀 Step 1: Extract Speakers [Wait for a minutes]", variant="primary")
 
               with gr.Accordion("Advanced TTS Options", open=False):
                   exaggeration = gr.Slider(0.25, 2, step=.05, label="Exaggeration", value=.5)
@@ -152,6 +151,7 @@ def dubbing_ui():
               with gr.Accordion("Video Maker", open=True):
                   recover_audio=gr.Checkbox(value=True, label="🎧 Restore background music and ambience ?")
                   need_video=gr.Checkbox(value=True, label="🎬 Make Video ?")
+                  want_subtitle = gr.Checkbox(value=True, label="Generate Subtitles for the dubbed audio?")
 
           with gr.Column(scale=2):
               gr.Markdown("### 🗣️ Speaker Reference Audio")
