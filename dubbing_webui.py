@@ -199,7 +199,7 @@ def dubbing_ui():
           ],
           outputs=[
               output_audio,
-              dubbed_audio_with_music,
+              output_audio_music,
               custom_level_srt,
               display_video,
               default_srt,
