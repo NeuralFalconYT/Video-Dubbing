@@ -4,7 +4,7 @@ import json
 import os
 import shutil
 from dubbing_pipeline import dubbing,make_video
-from utils import get_dubbing_json,get_speakers
+from utils import get_dubbing_json,get_speakers,restore_music
 
 from tts import supported_languages
 MAX_SPEAKERS = 10
@@ -48,7 +48,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text):
 
 def start_dubbing_ui(
     media_file, language_name, have_music, want_subtitle, llm_result_text,
-    exaggeration, cfg_weight, temp,need_video,
+    exaggeration, cfg_weight, temp,need_video,recover_audio,
     dubbing_json_state, speaker_voice_state,
     *speaker_audios
 ):
@@ -102,18 +102,26 @@ def start_dubbing_ui(
         cfgw_input=cfg_weight,
         want_subtile=want_subtitle
     )
+    dubbed_audio_with_music=None
+    if recover_audio:
+        dubbed_audio_with_music = restore_music(media_file, dubbed_audio_path)
     video_path=None
     if need_video:
-      video_path=make_video(media_file,dubbed_audio_path,language_name)
+      if recover_audio:
+        video_path=make_video(media_file,dubbed_audio_with_music,language_name)
+      else:
+        video_path=make_video(media_file,dubbed_audio_path,language_name)
 
     return (
         dubbed_audio_path,
+        dubbed_audio_with_music,
         returned_custom_srt,
         video_path,
         returned_default_srt,
         returned_word_srt,
         returned_shorts_srt,
         dubbed_audio_file,
+        dubbed_audio_with_music,
         video_path
     )
 
@@ -142,7 +150,8 @@ def dubbing_ui():
                   cfg_weight = gr.Slider(0.2, 1, step=.05, label="CFG/Pace", value=0.5)
                   temp = gr.Slider(0.05, 5, step=.05, label="Temperature", value=.8)
               with gr.Accordion("Video Maker", open=True):
-                  need_video=gr.Checkbox(value=True, label="Need Video?")
+                  recover_audio=gr.Checkbox(value=True, label="🎧 Restore background music and ambience ?")
+                  need_video=gr.Checkbox(value=True, label="🎬 Make Video ?")
 
           with gr.Column(scale=2):
               gr.Markdown("### 🗣️ Speaker Reference Audio")
@@ -157,6 +166,7 @@ def dubbing_ui():
 
               gr.Markdown("### 🎉 Outputs")
               output_audio = gr.Audio(interactive=False, label="🎧 Dubbed Audio Output", autoplay=False)
+              output_audio_music = gr.Audio(interactive=False, label="🎵 Dubbed Voice + Restored Background & Ambience", autoplay=False)
               custom_level_srt = gr.File(label="🗂️ Multi line srt")
               display_video=gr.Video(label="📽️ Video")
               
@@ -168,6 +178,7 @@ def dubbing_ui():
                   shorts_srt = gr.File(label="📱 Vertical Video SRT")
               with gr.Accordion("📦Download Audio & Video File [For colab]", open=False):
                   output_audio_file = gr.File(label="🎵 Download Dubbed Audio")
+                  output_audio_music_file= gr.File(label="🎶 Download Dubbed Voice + Restored Background & Ambience")
                   video_path = gr.File(label="🎞️ Download Video")
 
 
@@ -182,18 +193,20 @@ def dubbing_ui():
           fn=start_dubbing_ui,
           inputs=[
               media_file, language_name, have_music, want_subtitle, llm_result,
-              exaggeration, cfg_weight, temp,need_video,
+              exaggeration, cfg_weight, temp,need_video,recover_audio,
               dubbing_json_state, speaker_voice_state,
               *speaker_audios
           ],
           outputs=[
               output_audio,
+              dubbed_audio_with_music,
               custom_level_srt,
               display_video,
               default_srt,
               word_level_srt,
               shorts_srt,
               output_audio_file,
+              output_audio_music_file,
               video_path
           ]
       )
