@@ -49,7 +49,7 @@ def transcript_ui():
                                   )
                     output_lang = gr.Dropdown(label="Translate Into", choices=target_lang_list, value="English")
                     task = gr.Dropdown(
-                        ["Translation", "Fix Grammar [English to English for dubbing]"],
+                        ["Translation", "Fix Grammar", "Rewrite"],
                         label="Select Task",
                         value="Translation",
                     )
