@@ -133,8 +133,8 @@ def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
       if input_lang==output_lang:
         trans_text=""
       else:
-        if method=="Using Google Translator":
-          trans_text=translate_text(text, input_lang,output_lang),
+        if method=="Using Google Translator" and task=="Translation":
+          trans_text=translate_text(text, input_lang,output_lang)
         else:
           trans_text=""
       data={
@@ -231,14 +231,56 @@ Output in JSON format exactly like this:
 """
     return prompt
 
+
+
+def prompt_rewrite_subtitles(language="English"):
+    """
+    Generates a professional prompt for rewriting subtitles (.srt) 
+    to make them natural and dubbing-friendly, while maintaining timing, meaning, and emotion.
+    """
+    prompt = f"""
+-------------- You are a professional **subtitle rewriter** specializing in **video dubbing**.
+Your task is to rewrite the given `.srt` subtitle file to make it sound more natural, expressive, and dubbing-friendly — 
+while preserving timing, context, emotional tone, and meaning.
+
+
+
+Output in JSON format exactly like this:
+```json
+{{
+  "sentence_number": {{
+    "text": "original subtitle text",
+    "dubbing": 'Rewrite the "text" in {language}' smooth, dubbing-optimized version,
+    "start": start_time,
+    "end": end_time,
+    "speaker_id": speaker_id
+  }}
+}}
+````
+
+**Guidelines for Subtitle Rewriting:**
+
+1. **Read the entire subtitle file** first to understand the full context and speaker dynamics.
+2. Rewrite each line to sound natural in spoken {language} — as if performed by a voice actor.
+3. Maintain the same meaning and tone, but adjust phrasing for smoother dubbing flow.
+4. Keep the rewritten text **similar in length and pacing** to the original to ensure lip-sync compatibility.
+5. Avoid robotic or overly formal language — make it conversational and emotionally authentic.
+   """
+   return prompt
+
+
+                                          
 def prompt_maker(transcription,target_language, task="Translation"):
     txt_path="./temp.txt"
     with open(txt_path, 'w', encoding='utf-8') as f:
         f.write(transcription)
         if task == "Translation":
             f.write(prompt_translation(target_language))
-        else:
+        if task=="Fix Grammar":
             f.write(prompt_fix_grammar(target_language))
+        if task=="Rewrite":
+            f.write(prompt_rewrite_subtitles(target_language))
+            
 
     with open(txt_path, 'r', encoding='utf-8') as f:
         content = f.read()
