@@ -266,7 +266,7 @@ Output in JSON format exactly like this:
 4. Keep the rewritten text **similar in length and pacing** to the original to ensure lip-sync compatibility.
 5. Avoid robotic or overly formal language — make it conversational and emotionally authentic.
    """
-   return prompt
+    return prompt
 
 
 
@@ -308,7 +308,7 @@ Output must be in JSON format exactly like this:
 5. Keep each rewritten line **close in length** to the original for better lip-sync.
 6. Avoid overly formal or unnatural phrasing — it should sound like real speech.
    """
-   return prompt
+    return prompt
 
 
                                           
