@@ -156,7 +156,7 @@ def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
   if method=="Google AI Studio":
       prompt=prompt_maker(readable_json,output_lang,task)  
   if method=="Hunyuan-MT-7B Translator":
-      timestamp=hunyuan_mt_translate(timestamp, input_lang, output_lang)
+      timestamp=hunyuan_mt_translate(timestamp, input_lang, output_lang,task)
       readable_json = json.dumps(timestamp, indent=2, ensure_ascii=False)
 
           
@@ -269,6 +269,48 @@ Output in JSON format exactly like this:
    return prompt
 
 
+
+def prompt_translate_and_rewrite(language):
+    """
+    Generates a dubbing-friendly prompt for translating AND rewriting an .srt subtitle file.
+    The model should both translate and naturally rewrite each line for smooth, expressive dubbing.
+    """
+    prompt = f"""
+-------------- You are a professional **subtitle translator and dialogue rewriter** for **video dubbing**.
+Your job is to translate the given `.srt` subtitle file into **{language}**, 
+and then rewrite each translated line so it sounds **natural, expressive, and dubbing-friendly** — 
+while preserving timing, emotional tone, and the original meaning.
+
+🧠 **Important clarification of "Rewrite":**
+"Rewrite" means: keep the same meaning, tone, and intent as the original line,
+but express it in more natural and conversational {language} — not word-for-word translation.
+Make it sound like real spoken dialogue a voice actor would perform.
+
+Output must be in JSON format exactly like this:
+```json
+{{
+  "sentence_number": {{
+    "text": "original subtitle text",
+    "dubbing": "smooth, natural {language} version — rewritten for dubbing",
+    "start": start_time,
+    "end": end_time,
+    "speaker_id": speaker_id
+  }}
+}}
+
+
+**Guidelines for Translation + Rewriting:**
+
+1. **Read the entire subtitle file** first to understand full context and tone.
+2. Translate into **fluent, conversational {language}**, not literal or robotic text.
+3. **Rewrite each translated line** to keep it natural, emotional, and dubbing-friendly.
+4. Preserve the original **meaning, emotion, and pacing**.
+5. Keep each rewritten line **close in length** to the original for better lip-sync.
+6. Avoid overly formal or unnatural phrasing — it should sound like real speech.
+   """
+   return prompt
+
+
                                           
 def prompt_maker(transcription,target_language, task="Translation"):
     txt_path="./temp.txt"
@@ -280,8 +322,9 @@ def prompt_maker(transcription,target_language, task="Translation"):
             f.write(prompt_fix_grammar(target_language))
         if task=="Rewrite":
             f.write(prompt_rewrite_subtitles(target_language))
-            
-
+        if task=="Translate & Rewrite":
+            f.write(prompt_translate_and_rewrite(target_language))
+    
     with open(txt_path, 'r', encoding='utf-8') as f:
         content = f.read()
     return content
