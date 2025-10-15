@@ -127,7 +127,10 @@ def hunyuan_mt_translate(timestamp, source_lang="English", target_lang="Hindi",t
                     {"role": "user", "content": text}
                 ]
                 output = llm.create_chat_completion(messages=messages)
-                return output["choices"][0]["message"]["content"].strip()
+                res=output["choices"][0]["message"]["content"].strip()
+                res=res.strip("**")
+                res=res.strip('“”')
+                return res
             except:
                 return None
 
