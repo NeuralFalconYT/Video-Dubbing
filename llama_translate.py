@@ -48,7 +48,45 @@ def download_file(url: str, download_file_path: str, redownload: bool = False) -
     tqdm.write(f"⬇️ Downloaded: {os.path.basename(download_file_path)}")
     return True
 
-def hunyuan_mt_translate(timestamp, source_lang="English", target_lang="Hindi"):
+
+def llama_system_prompt(task, source_lang, target_lang):
+    system_prompt = ""
+
+    if task == "Translation":
+        system_prompt = f"""
+            You are a professional {source_lang} to {target_lang} dubbing translator. 
+            Translate each line naturally, matching tone, emotion, and style as spoken in movies or web series. 
+            Avoid word-for-word translation and output only fluent, authentic {target_lang} dialogue.
+            Only return the translated text.
+        """
+
+    elif task == "Fix Grammar":
+        system_prompt = f"""
+        You are an expert in editing and refining {target_lang} text. 
+        Fix grammar, spelling, and fluency issues while keeping the original tone and meaning. 
+        Make the text sound natural, polished, and professional in {target_lang}. 
+        Only return the corrected {target_lang} text.
+    """
+
+    elif task == "Rewrite":
+        system_prompt = f"""
+            You are a skilled {target_lang} content rewriter. 
+            Rewrite the given text into clear, expressive, and cinematic {target_lang}, keeping the same meaning but improving tone, flow, and readability. 
+            Avoid unnecessary words or repetition. 
+            Only return the rewritten {target_lang} text.
+        """
+    elif task == "Translate & Rewrite":
+        system_prompt = f"""
+            You are a professional {source_lang} to {target_lang} dubbing translator and creative rewriter. 
+            Translate the text into {target_lang} naturally, but also rewrite it to sound fluent, expressive, and cinematic — not a direct word-for-word translation. 
+            Preserve all meaning, tone, and emotions from the original, but make it sound as if it were originally written in {target_lang}. 
+            Only return the translated and rewritten {target_lang} text.
+        """
+    return " ".join(system_prompt.split())
+
+
+
+def hunyuan_mt_translate(timestamp, source_lang="English", target_lang="Hindi",task="Translation"):
     try:
         from llama_cpp import Llama
         import gc
@@ -81,13 +119,8 @@ def hunyuan_mt_translate(timestamp, source_lang="English", target_lang="Hindi"):
                 verbose=False
             )
 
-        # Translation function (unchanged)
-        def local_llm_translate(text, source_lang, target_lang):
-            system_prompt = f"""
-            You are a professional {source_lang} to {target_lang} dubbing translator. 
-            Translate each line naturally, matching tone, emotion, and style as spoken in movies or web series. 
-            Avoid word-for-word translation and output only fluent, authentic {target_lang} dialogue.
-            """
+        system_prompt=llama_system_prompt(task, source_lang, target_lang)
+        def local_llm_translate(text, system_prompt):
             try:
                 messages = [
                     {"role": "system", "content": system_prompt},
@@ -101,7 +134,7 @@ def hunyuan_mt_translate(timestamp, source_lang="English", target_lang="Hindi"):
         # Process timestamps
         for key, entry in timestamp.items():
             original_text = entry['text']
-            tran_text = local_llm_translate(original_text, source_lang, target_lang)
+            tran_text = local_llm_translate(original_text, system_prompt)
             entry['dubbing'] = tran_text if tran_text else original_text
 
         # Free memory
