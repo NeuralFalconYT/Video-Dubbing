@@ -113,7 +113,7 @@ def srt_to_dub(
             'starting_silence': starting_silence,
             'ending_silence': ending_silence,
             'tts_path':  os.path.abspath(save_path),
-            'tts_duration': get_duration(filename=save_path) if os.path.exists(save_path) else 0.0,
+            'tts_duration': get_duration(path=save_path) if os.path.exists(save_path) else 0.0,
             'speaker_id': speaker_id,
             'language': language_name,
             'exaggeration': exaggeration_input,
