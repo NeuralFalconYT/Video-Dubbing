@@ -302,7 +302,7 @@ def whisper_pyannote(mono_audio,language_name,number_of_speakers=None,make_small
   diarize_segments, detected_num_speakers=speaker_diarization(diarization_model,mono_audio,num_speakers=number_of_speakers)
   final_segments=_merge_segments_with_diarization(segments, diarize_segments)
   if make_small_segments:
-      lang_code=LANGUAGE_CODE.get(predicted_lang,"en")
+      lang_code=predicted_lang
       segments = segment_split(
                             final_segments,
                             language=lang_code,
