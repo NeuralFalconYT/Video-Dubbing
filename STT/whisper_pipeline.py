@@ -1,4 +1,4 @@
-%cd /content/Video-Dubbing/STT
+# %cd /content/Video-Dubbing/STT
 import os
 from pydub import AudioSegment
 import subprocess
