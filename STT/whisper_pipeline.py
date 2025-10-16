@@ -11,6 +11,8 @@ import pandas as pd
 import numpy as np
 import re 
 import torchaudio
+from small_segment import segment_split
+
 def convert_to_mono(media_file):
     # Extract folder, base name, and extension
     folder, filename = os.path.split(media_file)
@@ -294,11 +296,22 @@ def vocal_music_split(media_file,mono_audio):
 
 
 
-def whisper_pyannote(mono_audio,language_name,number_of_speakers=None,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
+def whisper_pyannote(mono_audio,language_name,number_of_speakers=None,make_small_segments=True,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
   whisper_model, diarization_model=load_model(model_name="deepdml/faster-whisper-large-v3-turbo-ct2")
   segments,predicted_lang=transcribe_audio(whisper_model,mono_audio, language=language_name)
   diarize_segments, detected_num_speakers=speaker_diarization(diarization_model,mono_audio,num_speakers=number_of_speakers)
   final_segments=_merge_segments_with_diarization(segments, diarize_segments)
+  if make_small_segments:
+      segments = segment_split(
+                            final_segments,
+                            language=lang_code,
+                            max_chars=80,
+                            minimum_gap=0.05,
+                            allow_same_start_end_merge=True,  
+                            max_chars_merge=90,               
+                        )
+      final_segments=segments
+      
   result={'segments':final_segments, 'language':predicted_lang, 'num_speakers':detected_num_speakers}
   del whisper_model
   del diarization_model
@@ -307,13 +320,13 @@ def whisper_pyannote(mono_audio,language_name,number_of_speakers=None,model_name
       torch.cuda.empty_cache()
   return result
 
-def get_transcript(media_file,language_name=None,number_of_speakers=None,remove_music=True):
+def get_transcript(media_file,language_name=None,number_of_speakers=None,remove_music=True,make_small_segments=True,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
   mono_audio=convert_to_mono(media_file)
   vocal_path,music_path=vocal_music_split(media_file,mono_audio)
   if remove_music:
-    result=whisper_pyannote(vocal_path,language_name,number_of_speakers)
+    result=whisper_pyannote(vocal_path,language_name,number_of_speakers,make_small_segments,model_name)
   else:
-    result=whisper_pyannote(mono_audio,language_name,number_of_speakers)
+    result=whisper_pyannote(mono_audio,language_name,number_of_speakers,make_small_segments,model_name)
   return result
 
 # from whisper_pipeline import get_transcript
