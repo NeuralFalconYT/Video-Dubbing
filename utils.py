@@ -222,7 +222,8 @@ def get_dubbing_json(raw_json, silence_threshold=0.6, max_merged_duration=10.0):
             "duration": duration,
             "speaker_id": speaker_id,
             }
-    fixed_dubbing_json=merge_short_silences(dubbing_json, silence_threshold, max_merged_duration)
+    fixed_dubbing_json=dubbing_json
+    # fixed_dubbing_json=merge_short_silences(dubbing_json, silence_threshold, max_merged_duration)
     return fixed_dubbing_json
 
 import os
