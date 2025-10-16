@@ -132,7 +132,8 @@ def load_model(model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
 def transcribe_audio(whisper_model,mono_audio, language="English"):
   lang_code = LANGUAGE_CODE.get(language, None)
   segments,whisper_info  = whisper_model.transcribe(mono_audio, word_timestamps=True, language=lang_code)
-  predicted_lang=get_language_name(whisper_info.language)
+  # predicted_lang=get_language_name(whisper_info.language)
+  predicted_lang=whisper_info.language
   segments = list(segments)
   segments = [
             {
