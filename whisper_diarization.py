@@ -80,8 +80,8 @@ LANGUAGE_CODE = {
 from whisper_pipeline import get_transcript
 # media_file="/content/video.mp4"
 # result=get_transcript(media_file,language_name=None,number_of_speakers=None,remove_music=True)
-def speech_to_text(audio_path,language_name=None,number_of_speakers=None,remove_music=True):
-  result=get_transcript(audio_path,language_name,number_of_speakers,remove_music)
+def speech_to_text(audio_path,language_name=None,number_of_speakers=None,remove_music=True,make_small_segments=True,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
+  result=get_transcript(audio_path,language_name,number_of_speakers,remove_music,make_small_segments)
   return result
 
 def save_json(res):
@@ -122,10 +122,10 @@ def translate_text(text, source_language, destination_language):
       print(f"Translation failed: {e}")
       return ""
 
-def process_media(media_file,num_speakers,remove_music, input_lang, output_lang,method,task):
+def process_media(media_file,num_speakers,remove_music, make_small_segments,input_lang, output_lang,method,task):
   json_transcription,readable_json,prompt=None,None,None
   try:
-    res = speech_to_text(media_file,language_name="English",number_of_speakers=num_speakers,remove_music=remove_music)
+    res = speech_to_text(media_file,language_name="English",number_of_speakers=num_speakers,remove_music=remove_music,make_small_segments=make_small_segments)
     json_transcription=save_json(res)
     timestamp={}
     sentence_number=1
