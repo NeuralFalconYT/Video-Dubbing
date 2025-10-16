@@ -18,9 +18,9 @@ def segment_split(
     if language in cjk_languages:
       max_chars=10
       max_chars_merge=20
-    print(f"Language: {language}")
-    print(f"max_chars {max_chars}")
-    print(f"max_chars {max_chars_merge}")
+    # print(f"Language: {language}")
+    # print(f"max_chars {max_chars}")
+    # print(f"max_chars {max_chars_merge}")
     all_new_segments = []
 
     for seg in final_segments:
