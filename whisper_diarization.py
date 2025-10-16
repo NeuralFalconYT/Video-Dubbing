@@ -126,7 +126,7 @@ def process_media(media_file,num_speakers,remove_music, make_small_segments,inpu
   json_transcription,readable_json,prompt=None,None,None
   timestamp={}
   try:
-    res = speech_to_text(media_file,language_name="English",number_of_speakers=num_speakers,remove_music=remove_music,make_small_segments=make_small_segments)
+    res = speech_to_text(media_file,language_name=input_lang,number_of_speakers=num_speakers,remove_music=remove_music,make_small_segments=make_small_segments)
     json_transcription=save_json(res)
     sentence_number=1
     for i in res["segments"]:
