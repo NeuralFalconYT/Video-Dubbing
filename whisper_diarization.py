@@ -4,7 +4,7 @@
 import sys
 sys.path.append("./STT/")
 
-from pipeline import WhisperDiarizationPipeline
+# from pipeline import WhisperDiarizationPipeline
 import torch
 import gc
 import re
@@ -32,52 +32,57 @@ LANGUAGE_CODE = {
     'Turkish': 'tr', 'Ukrainian': 'uk', 'Urdu': 'ur', 'Uzbek': 'uz', 'Vietnamese': 'vi',
     'Welsh': 'cy', 'Yiddish': 'yi', 'Yoruba': 'yo', 'Zulu': 'zu'
 }
-def speech_to_text(audio_path,language_name=None,number_of_speakers=None):
-  lang_code = LANGUAGE_CODE.get(language_name, None)
-  if number_of_speakers==0:
-    number_of_speakers=None
-  # Detect device and compute type automatically
-  if torch.cuda.is_available():
-    device = "cuda"        # Use GPU if available
-    compute_type = "float16"  # Use faster, lower-precision computation on GPU
-  elif torch.backends.mps.is_available():
-      device = "mps"         # Apple GPU (Metal)
-      compute_type = "float16"
-  else:
-      device = "cpu"         # Fallback to CPU
-      compute_type = "int8"  # Low-memory, quantized CPU computation
+# def speech_to_text(audio_path,language_name=None,number_of_speakers=None):
+#   lang_code = LANGUAGE_CODE.get(language_name, None)
+#   if number_of_speakers==0:
+#     number_of_speakers=None
+#   # Detect device and compute type automatically
+#   if torch.cuda.is_available():
+#     device = "cuda"        # Use GPU if available
+#     compute_type = "float16"  # Use faster, lower-precision computation on GPU
+#   elif torch.backends.mps.is_available():
+#       device = "mps"         # Apple GPU (Metal)
+#       compute_type = "float16"
+#   else:
+#       device = "cpu"         # Fallback to CPU
+#       compute_type = "int8"  # Low-memory, quantized CPU computation
 
-  # Initialize Whisper + Diarization pipeline
-  pipeline = WhisperDiarizationPipeline(
-      device=device,  # hardware to run model on
-      compute_type=compute_type,  # model precision / speed
-      model_name="deepdml/faster-whisper-large-v3-turbo-ct2"  # model variant
-  )
+#   # Initialize Whisper + Diarization pipeline
+#   pipeline = WhisperDiarizationPipeline(
+#       device=device,  # hardware to run model on
+#       compute_type=compute_type,  # model precision / speed
+#       model_name="deepdml/faster-whisper-large-v3-turbo-ct2"  # model variant
+#   )
 
-  # Run prediction on the audio file
-  result = pipeline.predict(
-      file_string=None,             # Optional: raw audio as base64 string (not used here)
-      file_url=None,                # Optional: URL of audio file to download (not used)
-      file_path=audio_path,  # Path to local audio file
-      num_speakers=number_of_speakers,  # Number of speakers; None = auto-detect
-      translate=False,              # True = convert audio to English; False = keep original language
-      language=lang_code,                # Force transcription in a specific language; None = auto-detect
-      prompt=None,                  # Optional text prompt for better transcription context
-      preprocess=0,                 # Audio preprocessing level (0 = none, 1-4 = increasing filtering/denoise)
-      highpass_freq=45,             # High-pass filter frequency (Hz) to remove low rumble
-      lowpass_freq=8000,            # Low-pass filter frequency (Hz) to remove high-frequency noise
-      prop_decrease=0.3,            # Noise reduction proportion (higher = more aggressive)
-      stationary=True,              # Assume background noise is stationary (True/False)
-      target_dBFS=-18.0             # Normalize audio loudness to this dBFS level
-  )
-  del pipeline
-  gc.collect()
-  if torch.cuda.is_available():
-    torch.cuda.empty_cache()
-  # print(result.to_dict())
-  return result.to_dict()
+#   # Run prediction on the audio file
+#   result = pipeline.predict(
+#       file_string=None,             # Optional: raw audio as base64 string (not used here)
+#       file_url=None,                # Optional: URL of audio file to download (not used)
+#       file_path=audio_path,  # Path to local audio file
+#       num_speakers=number_of_speakers,  # Number of speakers; None = auto-detect
+#       translate=False,              # True = convert audio to English; False = keep original language
+#       language=lang_code,                # Force transcription in a specific language; None = auto-detect
+#       prompt=None,                  # Optional text prompt for better transcription context
+#       preprocess=0,                 # Audio preprocessing level (0 = none, 1-4 = increasing filtering/denoise)
+#       highpass_freq=45,             # High-pass filter frequency (Hz) to remove low rumble
+#       lowpass_freq=8000,            # Low-pass filter frequency (Hz) to remove high-frequency noise
+#       prop_decrease=0.3,            # Noise reduction proportion (higher = more aggressive)
+#       stationary=True,              # Assume background noise is stationary (True/False)
+#       target_dBFS=-18.0             # Normalize audio loudness to this dBFS level
+#   )
+#   del pipeline
+#   gc.collect()
+#   if torch.cuda.is_available():
+#     torch.cuda.empty_cache()
+#   # print(result.to_dict())
+#   return result.to_dict()
 
-
+from whisper_pipeline import get_transcript
+# media_file="/content/video.mp4"
+# result=get_transcript(media_file,language_name=None,number_of_speakers=None,remove_music=True)
+def speech_to_text(audio_path,language_name=None,number_of_speakers=None,remove_music=True):
+  result=get_transcript(audio_path,language_name,number_of_speakers,remove_music)
+  return result
 
 def save_json(res):
     try:
@@ -117,10 +122,10 @@ def translate_text(text, source_language, destination_language):
       print(f"Translation failed: {e}")
       return ""
 
-def process_media(media_file,num_speakers, input_lang, output_lang,method,task):
+def process_media(media_file,num_speakers,remove_music, input_lang, output_lang,method,task):
   json_transcription,readable_json,prompt=None,None,None
   try:
-    res = speech_to_text(media_file,language_name="English",number_of_speakers=num_speakers)
+    res = speech_to_text(media_file,language_name="English",number_of_speakers=num_speakers,remove_music=remove_music)
     json_transcription=save_json(res)
     timestamp={}
     sentence_number=1
