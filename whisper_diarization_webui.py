@@ -1,4 +1,4 @@
-%cd /content/Video-Dubbing/
+# %cd /content/Video-Dubbing/
 
 # %%writefile /content/Video-Dubbing/whisper_diarization_webui.py
 from whisper_diarization import process_media,LANGUAGE_CODE
