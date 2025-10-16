@@ -1,3 +1,4 @@
+%cd /content/Video-Dubbing/
 
 # %%writefile /content/Video-Dubbing/whisper_diarization_webui.py
 from whisper_diarization import process_media,LANGUAGE_CODE
@@ -39,6 +40,7 @@ def transcript_ui():
                         step=1,
                         label="Number of Speakers [0 means auto-detect]"
                     )
+                remove_music = gr.Checkbox(label="Clean Audio First", value=True)
                 input_lang = gr.Dropdown(label="Source Language", choices=source_lang_list, value="English")
                 generate_btn = gr.Button("🚀 Generate Transcription", variant="primary")
                 with gr.Accordion("⚙️ Translate Parameter", open=True):
@@ -65,7 +67,7 @@ def transcript_ui():
 
         generate_btn.click(
             fn=process_media,
-            inputs=[upload_media,number_of_speakers, input_lang, output_lang,method,task],
+            inputs=[upload_media,number_of_speakers,remove_music, input_lang, output_lang,method,task],
             outputs=[media_file,json_file, transcript_box,llm_translate]
         )
 
