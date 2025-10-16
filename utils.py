@@ -329,10 +329,10 @@ import subprocess
 from pathlib import Path
 
 def demucs_separate_vocal_music(file_path, model_name="htdemucs_ft", output_dir="separated_output"):
-    duration=get_media_duration(file_path)
-    max_duration=10*60 #10 min
-    if duration>max_duration:
-        model_name="htdemucs"
+    # duration=get_media_duration(file_path)
+    # max_duration=10*60 #10 min
+    # if duration>max_duration:
+    #     model_name="htdemucs"
         
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
@@ -450,9 +450,19 @@ def fix_duration(speaker_voice, max_duration=20.0):
 
 
 def get_speakers(media_file,it_has_backgroud_music,json_data):
+  separate_folder="./split_media"
+  name_only = os.path.splitext(os.path.basename(media_file))[0]
+  vocal_path=f"{separate_folder}/{name_only}_vocal.wav"
+  # music_path=f"{separate_folder}/{name_only}_music.wav"
+  flag=True
+  if it_has_backgroud_music:
+      if os.path.exists(vocal_path):
+          media_file=vocal_path
+          flag=False
+      
   speaker_voice=get_speaker_from_media(media_file,json_data)
   fix_duration(speaker_voice, max_duration=20.0)
-  if it_has_backgroud_music:
+  if it_has_backgroud_music==True and flag==True:
     print("Start Removing Speaker's Background Music ... ")
     get_clean_vocal(speaker_voice)
     print("Speaker's Background Music Removal Complete")
@@ -634,9 +644,15 @@ def pad_or_trim(audio, target_duration_ms):
 
 def restore_music(media_file, tts_dub_path):
     print("🎬 Extracting background and checking durations...")
-
-    # 1️⃣ Separate vocals/background
-    vocals_path, background_path = demucs_separate_vocal_music(media_file)
+    separate_folder="./split_media"
+    name_only = os.path.splitext(os.path.basename(media_file))[0]
+    # vocal_path=f"{separate_folder}/{name_only}_vocal.wav"
+    music_path=f"{separate_folder}/{name_only}_music.wav"
+    if os.path.exists(music_path):
+        background_path=music_path
+    else:
+        # 1️⃣ Separate vocals/background
+        vocals_path, background_path = demucs_separate_vocal_music(media_file)
 
     # 2️⃣ Get durations (in seconds)
     orig_duration = get_media_duration(media_file)
