@@ -141,7 +141,19 @@ def start_dubbing_ui(
         video_path=make_video(media_file,dubbed_audio_with_music,language_name)
       else:
         video_path=make_video(media_file,dubbed_audio_path,language_name)
-
+    drive_folder="/content/gdrive/MyDrive/Video_Dubbing"
+    if os.path.exists(drive_folder):
+        folder_name=os.path.splitext(os.path.basename(dubbed_audio_path))[0]
+        folder_name=folder_name[:20]
+        new_folder=f"{drive_folder}/{folder_name}"
+        os.makedirs(new_folder, exist_ok=True)
+        for i in [dubbed_audio_path,dubbed_audio_with_music,returned_custom_srt,video_path,returned_default_srt,returned_word_srt,returned_shorts_srt]:
+            try:
+                shutil.copy(dubbed_audio_path,new_folder)
+            except Exception as e:
+                print(e)
+                pass
+        
     return (
         dubbed_audio_path,
         dubbed_audio_with_music,
