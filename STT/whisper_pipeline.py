@@ -298,6 +298,8 @@ def vocal_music_split(media_file,mono_audio):
 
 
 def whisper_pyannote(mono_audio,language_name,number_of_speakers=None,make_small_segments=True,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
+  if number_of_speakers==0:
+      number_of_speakers=None
   whisper_model, diarization_model=load_model(model_name="deepdml/faster-whisper-large-v3-turbo-ct2")
   segments,predicted_lang=transcribe_audio(whisper_model,mono_audio, language=language_name)
   diarize_segments, detected_num_speakers=speaker_diarization(diarization_model,mono_audio,num_speakers=number_of_speakers)
