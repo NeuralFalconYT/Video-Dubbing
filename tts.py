@@ -352,10 +352,12 @@ def remove_noise_high_quality(audio_path,
     # Step 1: Prepare VAD input (16kHz mono)
     # --------------------------
     wav_vad = torch.mean(orig_audio, dim=0, keepdim=True)  # mono
-    if orig_sr != 16000:
-        wav_vad = torchaudio.transforms.Resample(orig_sr, 16000)(wav_vad)
-    wav_vad = wav_vad.to(device)
 
+    if orig_sr != 16000:
+        wav_vad = wav_vad.cpu()  # move to CPU before resample
+        wav_vad = torchaudio.transforms.Resample(orig_sr, 16000)(wav_vad)  # resample
+        
+    wav_vad = wav_vad.to(device)  # move back to GPU for VAD model
     # --------------------------
     # Step 2: Load Silero-VAD
     # --------------------------
