@@ -1,0 +1,23 @@
+# Navigate to your project folder
+cd Video-Dubbing
+
+# Create a virtual environment named 'venv'
+python -m venv venv
+
+# Activate the virtual environment
+# Command Prompt:
+venv\Scripts\activate
+# PowerShell:
+venv\Scripts\Activate.ps1
+
+# Install required packages (if you have requirements.txt)
+pip install -r requirements.txt
+
+# Install ffmpeg
+https://www.ffmpeg.org/download.html
+
+# Run Python scripts
+python app.py --debug
+
+# Deactivate the virtual environment when done
+deactivate
