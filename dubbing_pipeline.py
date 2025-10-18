@@ -155,5 +155,5 @@ def dubbing(
     save_path=audio_sync(json_path)
     default_srt,custom_srt, word_srt, shorts_srt=None,None,None,None
     if want_subtile:
-         default_srt, translated_srt_path, custom_srt, word_srt, shorts_srt, txt_path,sentence_json,word_json, transcript= subtitle_maker(media_file, language_name, language_name)
+         default_srt, translated_srt_path, custom_srt, word_srt, shorts_srt, txt_path,sentence_json,word_json, transcript= subtitle_maker(save_path, language_name, language_name)
     return save_path ,save_path,default_srt,custom_srt, word_srt, shorts_srt
