@@ -21,3 +21,9 @@ python app.py --debug
 
 # Deactivate the virtual environment when done
 deactivate
+
+
+# Deleting a Python virtual environment 
+
+Go to `Video-Dubbing` folder → Right-click `venv` → Delete.
+
