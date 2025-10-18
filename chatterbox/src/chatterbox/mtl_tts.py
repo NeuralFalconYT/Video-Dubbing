@@ -350,5 +350,8 @@ class ChatterboxMultilingualTTS:
                 ref_dict=self.conds.gen,
             )
             wav = wav.squeeze(0).detach().cpu().numpy()
-            watermarked_wav = self.watermarker.apply_watermark(wav, sample_rate=self.sr)
+            ## If this is not your own voice 
+            # watermarked_wav = self.watermarker.apply_watermark(wav, sample_rate=self.sr) 
+            ##If you use your own voice
+            watermarked_wav = wav
         return torch.from_numpy(watermarked_wav).unsqueeze(0)
