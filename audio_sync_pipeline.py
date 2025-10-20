@@ -6,64 +6,65 @@ import librosa
 import soundfile as sf
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-TARGET_SR = 48000 # 48 kHz
+
+TARGET_SR = 48000  # 48 kHz
+
 # --- Helper functions 
 def atempo_chain(factor):
-    if 0.5 <= factor <= 2.0: return f"atempo={factor:.3f}"
+    if 0.5 <= factor <= 2.0:
+        return f"atempo={factor:.3f}"
     parts = []
-    while factor > 2.0: parts.append("atempo=2.0"); factor /= 2.0
-    while factor < 0.5: parts.append("atempo=0.5"); factor *= 2.0
+    while factor > 2.0:
+        parts.append("atempo=2.0")
+        factor /= 2.0
+    while factor < 0.5:
+        parts.append("atempo=0.5")
+        factor *= 2.0
     parts.append(f"atempo={factor:.3f}")
     return ",".join(parts)
 
 def change_speed(input_file, output_file, speedup_factor):
-    # print(f"File path: {input_file}")
-    # print(f"Applying speed factor {speedup_factor:.3f} to {os.path.basename(input_file)}")
+    print(f"{input_file} {speedup_factor}")
     try:
-        # print(f"Using ffmpeg for speed change")
         command = [
             "ffmpeg", "-i", input_file,
             "-filter:a", atempo_chain(speedup_factor),
-            "-ar", str(TARGET_SR),  # <-- ADD THIS LINE
+            "-ar", str(TARGET_SR),
             output_file, "-y"
         ]
-        print(" ".join(command))
-        subprocess.run(command,
-            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+        # print(" ".join(command))
+        subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as e:
-        print(f"FFmpeg speedup error: {e}. Falling back to Librosa.")
+        print(f"⚠️ FFmpeg speedup error: {e}. Falling back to Librosa.")
         try:
-            # When falling back to Librosa, ensure we also resample
-            y, sr = librosa.load(input_file, sr=TARGET_SR) # <-- CHANGE sr=None to TARGET_SR
+            y, sr = librosa.load(input_file, sr=TARGET_SR)
             y_stretched = librosa.effects.time_stretch(y, rate=speedup_factor)
-            sf.write(output_file, y_stretched, TARGET_SR) # <-- Use TARGET_SR
+            sf.write(output_file, y_stretched, TARGET_SR)
         except Exception as e_librosa:
-            print(f"Librosa speedup failed: {e_librosa}. Copying original file.")
+            print(f"⚠️ Librosa speedup failed: {e_librosa}. Copying original file.")
             shutil.copy(input_file, output_file)
 
-
 def remove_edge_silence(input_path, output_path, top_db=30):
-    # Load and resample the audio to the target sample rate
-    y, sr = librosa.load(input_path, sr=TARGET_SR) # <-- CHANGE sr=None to TARGET_SR
+    y, sr = librosa.load(input_path, sr=TARGET_SR)
     trimmed_audio, _ = librosa.effects.trim(y, top_db=top_db)
-    # Write the output file with the correct sample rate
-    sf.write(output_path, trimmed_audio, TARGET_SR) # <-- Use TARGET_SR
+    sf.write(output_path, trimmed_audio, TARGET_SR)
     return output_path
 
-    
 def reduce_internal_silence(file_path, output_path, min_silence_duration_ms=100, silence_reduction_ms=50):
-    # Load the sound and immediately set its frame rate
-    sound = AudioSegment.from_file(file_path, format="wav").set_frame_rate(TARGET_SR) # <-- ADD .set_frame_rate()
-    audio_chunks = split_on_silence(sound, min_silence_len=min_silence_duration_ms, silence_thresh=-45, keep_silence=silence_reduction_ms)
+    sound = AudioSegment.from_file(file_path, format="wav").set_frame_rate(TARGET_SR)
+    audio_chunks = split_on_silence(
+        sound, 
+        min_silence_len=min_silence_duration_ms,
+        silence_thresh=-45, 
+        keep_silence=silence_reduction_ms
+    )
     combined = AudioSegment.empty()
-    for chunk in audio_chunks: combined += chunk
-    # The exported file will now correctly have the TARGET_SR
+    for chunk in audio_chunks:
+        combined += chunk
     combined.export(output_path, format="wav")
     return output_path
 
-
-
+# --- Core Algorithm
 def dubbing_algorithm(segments_data, final_audio_save_path):
     """
     Processes and stitches TTS segments using a file-based approach to conserve memory.
@@ -73,29 +74,25 @@ def dubbing_algorithm(segments_data, final_audio_save_path):
         shutil.rmtree(temp_dir)
     os.makedirs(temp_dir, exist_ok=True)
 
-    # This list will store the paths to the final processed audio files, not the audio data itself.
     processed_file_paths = []
-    
     sorted_segments = sorted(segments_data.values(), key=lambda x: x['start'])
 
+    MIN_SPEED = 0.8  # <-- minimum playback speed limit
+
     for i, segment in enumerate(sorted_segments):
-        # print(f"\n--- Processing Segment {i+1}/{len(sorted_segments)} ---")
-        
         tts_path = segment['tts_path']
         actual_duration = segment['actual_duration']
         starting_silence_s = segment['starting_silence']
-        
-        if not os.path.exists(tts_path):
-            print(f"WARNING: TTS file not found for segment {i+1}: {tts_path}. Skipping.")
-            continue
-            
-        if actual_duration <= 0.1:
-             print(f"WARNING: Segment {i+1} has near-zero duration ({actual_duration}s). Skipping.")
-             continue
 
-        # --- STAGE 1-3: Process each segment individually (this part is memory-safe) ---
-        
-        # Define paths for this segment's intermediate files
+        if not os.path.exists(tts_path):
+            print(f"⚠️ WARNING: TTS file not found for segment {i+1}: {tts_path}. Skipping.")
+            continue
+
+        if actual_duration <= 0.1:
+            print(f"⚠️ WARNING: Segment {i+1} has near-zero duration ({actual_duration}s). Skipping.")
+            continue
+
+        # --- Stage 1–3: Process segment ---
         temp_segment_path = tts_path
         trimmed_path = os.path.join(temp_dir, f"{i+1}_trimmed.wav")
         silence_reduced_path = os.path.join(temp_dir, f"{i+1}_silence_reduced.wav")
@@ -112,95 +109,78 @@ def dubbing_algorithm(segments_data, final_audio_save_path):
             temp_segment_path = silence_reduced_path
             current_duration = librosa.get_duration(path=temp_segment_path)
 
-        # Step 3: Forced Synchronization
+        # Step 3: Forced Synchronization with min 0.5x cap
         speedup_factor = current_duration / actual_duration
+        capped = False
+
+        if speedup_factor < MIN_SPEED:
+            print(f"⚠️ Segment {i+1}: Capping slow-down {speedup_factor:.2f}x → {MIN_SPEED:.2f}x")
+            capped = True
+            speedup_factor = MIN_SPEED
+
         if abs(speedup_factor - 1.0) > 0.01:
             change_speed(temp_segment_path, final_timed_path, speedup_factor)
-            temp_segment_path = final_timed_path
         else:
             shutil.copy(temp_segment_path, final_timed_path)
-            temp_segment_path = final_timed_path
-        
-        # --- STAGE 4: Silence Padding & Path Collection ---
-        # If there's starting silence, create a temporary silence file.
 
+        temp_segment_path = final_timed_path
+
+        # --- Handle padding if capped slow-down ---
+        if capped:
+            new_duration = librosa.get_duration(path=temp_segment_path)
+            silence_gap_s = actual_duration - new_duration
+
+            if silence_gap_s > 0.01:
+                silence_duration_ms = int(silence_gap_s * 1000)
+                silence_segment = AudioSegment.silent(
+                    duration=silence_duration_ms,
+                    frame_rate=TARGET_SR
+                )
+                silence_path = os.path.join(temp_dir, f"{i+1}_extra_silence.wav")
+                silence_segment.export(silence_path, format="wav")
+                
+                # Add both audio and silence
+                processed_file_paths.append(temp_segment_path)
+                processed_file_paths.append(silence_path)
+                continue  # skip normal append
+
+        # --- Stage 4: Prepend silence if needed ---
         if starting_silence_s > 0:
             silence_duration_ms = int(starting_silence_s * 1000)
-            # Create silence with the correct frame rate
-            silence_file = AudioSegment.silent(
-                duration=silence_duration_ms, 
-                frame_rate=TARGET_SR  # <-- ADD THIS ARGUMENT
-            )
+            silence_file = AudioSegment.silent(duration=silence_duration_ms, frame_rate=TARGET_SR)
             silence_path = os.path.join(temp_dir, f"{i+1}_silence.wav")
             silence_file.export(silence_path, format="wav")
-            # Add the path of the silence file to our list
             processed_file_paths.append(silence_path)
 
-        
-        # Add the path of the main processed audio segment to our list
         processed_file_paths.append(temp_segment_path)
 
-    # --- STAGE 5: Final Concatenation using FFmpeg ---
-    # print("\n--- All segments processed. Concatenating files using FFmpeg (Memory-Safe) ---")
-
-    # Create the text file for FFmpeg's concat demuxer
+    # --- Stage 5: Concatenate all ---
     concat_list_path = os.path.join(temp_dir, "concat_list.txt")
     with open(concat_list_path, "w") as f:
         for path in processed_file_paths:
-            # FFmpeg requires paths to be properly quoted/escaped
             f.write(f"file '{os.path.abspath(path)}'\n")
-    #Because sometime ffmpeg can't read another language
-    ffmpeg_save_path=f"{temp_dir}/temp.wav"
-    # Run the FFmpeg command
+
+    ffmpeg_save_path = f"{temp_dir}/temp.wav"
     try:
-        join_command= [
-                "ffmpeg",
-                "-f", "concat",          # Use the concat demuxer
-                "-safe", "0",            # Needed for absolute paths
-                "-i", concat_list_path,  # The input list of files
-                "-c", "copy",            # Copy the codec, don't re-encode (fast!)
-                ffmpeg_save_path,   # The final output file
-                "-y"                     # Overwrite output file if it exists
-            ]
-        # join_command=[
-        #             "ffmpeg",
-        #             "-f", "concat",
-        #             "-safe", "0",
-        #             "-i", concat_list_path,
-        #             "-ar", "44100",          # normalize sample rate (important)
-        #             "-ac", "1",              # force mono to keep it consistent
-        #             "-c:a", "pcm_s16le",     # standard 16-bit PCM WAV
-        #             ffmpeg_save_path,        # your output wav
-        #             "-y"
-        #         ]
-        subprocess.run(
-                join_command,
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
+        join_command = [
+            "ffmpeg", "-f", "concat", "-safe", "0",
+            "-i", concat_list_path, "-c", "copy", ffmpeg_save_path, "-y"
+        ]
+        subprocess.run(join_command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         shutil.copy(ffmpeg_save_path, final_audio_save_path)
-        # print(f"Successfully exported final dubbed audio track to: {final_audio_save_path}")
     except Exception as e:
         print(" ".join(join_command))
-        print(f"ERROR: FFmpeg concatenation failed: {e}")
-    # --- Cleanup ---  
-    # shutil.rmtree(temp_dir)
-    # print("Dubbing process complete.")
+        print(f"❌ ERROR: FFmpeg concatenation failed: {e}")
 
-# --- Updated Main Execution Function ---
+# --- Wrapper function ---
 def audio_sync(json_path):
-  with open(json_path, "r", encoding="utf-8") as f:
-      json_data = json.load(f)
-  save_path = json_data['save_path']
-  segments = json_data['segments']
-  
-  # Call the dubbing_algorithm
-  dubbing_algorithm(segments, save_path)
-  
-  # print(f"Save Path: {save_path}")
-  return save_path
+    with open(json_path, "r", encoding="utf-8") as f:
+        json_data = json.load(f)
+    save_path = json_data['save_path']
+    segments = json_data['segments']
+    dubbing_algorithm(segments, save_path)
+    return save_path
 
-#Example
+# Example usage:
 # from audio_sync_pipeline import audio_sync
 # audio_sync("/content/json_input.json")
