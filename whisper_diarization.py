@@ -80,9 +80,64 @@ LANGUAGE_CODE = {
 from whisper_pipeline import get_transcript
 # media_file="/content/video.mp4"
 # result=get_transcript(media_file,language_name=None,number_of_speakers=None,remove_music=True)
+
+
+import copy
+from collections import Counter
+
+def fix_speaker(res, max_check=6, debug=True):
+    res = copy.deepcopy(res)   # <<< makes a true independent copy
+
+    segments = res["segments"]
+
+    for i in range(len(segments)):
+        old = segments[i]["speaker"]
+
+        if old != "UNKNOWN":
+            continue
+
+        neighbors = []
+
+        for j in range(max(0, i - max_check), i):
+            s = segments[j]["speaker"]
+            if s != "UNKNOWN":
+                neighbors.append(s)
+
+        for j in range(i + 1, min(len(segments), i + 1 + max_check)):
+            s = segments[j]["speaker"]
+            if s != "UNKNOWN":
+                neighbors.append(s)
+
+        if neighbors:
+            new = Counter(neighbors).most_common(1)[0][0]
+        else:
+            new = None
+
+        if new:
+            segments[i]["speaker"] = new
+            for w in segments[i].get("words", []):
+                w["speaker"] = new
+
+            if debug:
+                print(f"UNKNOWN → {new}")
+        else:
+            if debug:
+                print("UNKNOWN → (no decision yet)")
+
+    for seg in segments:
+        if seg["speaker"] == "UNKNOWN":
+            seg["speaker"] = "SPEAKER_69"
+            for w in seg.get("words", []):
+                w["speaker"] = "SPEAKER_69"
+            if debug:
+                print("UNKNOWN → SPEAKER_69")
+
+    return res
+
 def speech_to_text(audio_path,language_name=None,number_of_speakers=None,remove_music=True,make_small_segments=True,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
   result=get_transcript(audio_path,language_name,number_of_speakers,remove_music,make_small_segments)
-  return result
+  res=fix_speaker(result, max_check=6, debug=True)
+  return res
 
 def save_json(res):
     try:
