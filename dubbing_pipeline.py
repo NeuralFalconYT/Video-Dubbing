@@ -86,7 +86,8 @@ def srt_to_dub(
         # print(f"temperature_input: {temperature_input}")
         # print(f"seed_num_input: {seed_num_input}")
         # print(f"cfgw_input: {cfgw_input}")
-        raw_path = clone_voice_streaming(
+        try:
+          raw_path = clone_voice_streaming(
                       text,
                       reference_audio,
                       language_name,
@@ -97,6 +98,10 @@ def srt_to_dub(
                       stereo=False,
                       remove_silence=False,
                   )
+        except Exception as e:
+          print(f"Audio Generation Failed")
+          print(f"{text[:25}"}
+          make_silence(actual_duration, raw_path)
         # print(raw_path)
         if os.path.exists(raw_path):
           shutil.copy(raw_path,save_path)
