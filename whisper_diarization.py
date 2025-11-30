@@ -337,11 +337,13 @@ def prompt_maker(transcription,target_language, task="Translation"):
 
 ## How to use 
 # from whisper_diarization import process_media
-# media_file="/content/test.mp3"
+# media_file="/content/test.MP3"
 # num_speakers=0
+# remove_music=True
 # input_lang="English"
-# output_lang="Hindi"
+# output_lang="English"
 # method="Google AI Studio"
-# task="Translation"
-# media_file,json_transcription,readable_json,prompt=process_media(media_file,num_speakers, input_lang, output_lang,method,task)
+# task="English"
+# make_small_segments=True
+# media_file,json_transcription,readable_json,prompt=process_media(media_file,num_speakers, remove_music, make_small_segments, input_lang, output_lang,method,task)
 # print(prompt)
