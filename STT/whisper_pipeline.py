@@ -326,8 +326,8 @@ def whisper_pyannote(mono_audio,language_name,number_of_speakers=None,make_small
 
 def get_transcript(media_file,language_name=None,number_of_speakers=None,remove_music=True,make_small_segments=True,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
   mono_audio=convert_to_mono(media_file)
-  vocal_path,music_path=vocal_music_split(media_file,mono_audio)
   if remove_music:
+    vocal_path,music_path=vocal_music_split(media_file,mono_audio)
     result=whisper_pyannote(vocal_path,language_name,number_of_speakers,make_small_segments,model_name)
   else:
     result=whisper_pyannote(mono_audio,language_name,number_of_speakers,make_small_segments,model_name)
