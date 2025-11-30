@@ -100,7 +100,7 @@ def srt_to_dub(
                   )
         except Exception as e:
           print(f"Audio Generation Failed")
-          print(f"{text[:25}"}
+          print(f"{text[:25}")
           make_silence(actual_duration, raw_path)
         # print(raw_path)
         if os.path.exists(raw_path):
