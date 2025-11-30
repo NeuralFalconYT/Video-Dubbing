@@ -100,7 +100,8 @@ def srt_to_dub(
                   )
         except Exception as e:
           print(f"Audio Generation Failed")
-          print(f"{text[:25}")
+          preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
+          print(preview)
           make_silence(actual_duration, raw_path)
         # print(raw_path)
         if os.path.exists(raw_path):
