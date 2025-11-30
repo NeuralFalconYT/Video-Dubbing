@@ -341,7 +341,7 @@ def prompt_maker(transcription,target_language, task="Translation"):
 # num_speakers=0
 # input_lang="English"
 # output_lang="Hindi"
-# method="LLM Translation"
+# method="Google AI Studio"
 # task="Translation"
 # media_file,json_transcription,readable_json,prompt=process_media(media_file,num_speakers, input_lang, output_lang,method,task)
 # print(prompt)
