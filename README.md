@@ -25,8 +25,10 @@
 I’m struggling to design an effective video dubbing logic.
 The current implementation in ```audio_sync_pipeline.py``` needs a better approach for **video synchronization**  ensuring the dubbed voice matches the **original speech speed, rhythm, and natural flow**.
 The goal is to achieve **smooth, natural timing** (speed up or slow down as needed) for perfect lip-sync and scene alignment.
+## A Basic Overview of How It Works:
 
-## 📌 Acknowledgments
+<img width="1920" height="1080" alt="workflow" src="https://github.com/user-attachments/assets/fda19f82-d985-4178-9ee5-bec943171f8e" />
+# 📌 Acknowledgments
 ### whisper-diarization-advanced:
 The transcription with speaker diarization in this project is adapted from [whisper-diarization-advanced](https://github.com/rafaelgalle/whisper-diarization-advanced) by **[@rafaelgalle](https://github.com/rafaelgalle)**.
 This forms the foundation for extracting speaker-labeled transcripts used in the video dubbing pipeline.
@@ -38,7 +40,6 @@ Original repository: [https://github.com/resemble-ai/chatterbox](https://github.
 
 We integrate Chatterbox's multilingual TTS and voice cloning capabilities in this video dubbing project.  
 All credit for the TTS model architecture, voice cloning algorithms, and base implementation goes to the Chatterbox team.
-
 
 
 
