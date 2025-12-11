@@ -4,6 +4,12 @@
 <!--[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/NeuralFalconYT/Video-Dubbing/blob/main/colab.ipynb)-->
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/NeuralFalconYT/Video-Dubbing/blob/main/Run_On_Colab.ipynb)
+<p align="center">
+  <a href="https://ko-fi.com/neuralfalcon">
+    <img src="https://ko-fi.com/img/githubbutton_sm.svg" />
+  </a>
+</p>
+
 
 ### 1. Normal TTS with Subtitle
 ![1](https://github.com/user-attachments/assets/64b33aa9-67a6-4c20-8abb-9125699004bb)
@@ -44,6 +50,7 @@ All credit for the TTS model architecture, voice cloning algorithms, and base im
 
 
 
+
 ### ⚠️ Disclaimer
 
 This project, **Video-Dubbing**, uses AI-based voice cloning and dubbing technologies.
@@ -53,6 +60,5 @@ This project, **Video-Dubbing**, uses AI-based voice cloning and dubbing technol
 * All prompts, models, and outputs should be used **responsibly** and in compliance with applicable laws and platform policies.
 * Voices or likenesses of real individuals should only be used **with explicit permission**.
 
-This project builds upon open-source work including [Chatterbox by Resemble AI](https://github.com/resemble-ai/chatterbox), which also cautions against misuse.
 
 
