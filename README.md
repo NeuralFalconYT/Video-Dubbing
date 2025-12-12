@@ -35,31 +35,33 @@ There is a possible solution: when a tts audio is too long, we can use AI to sho
 
 
 ##  🔧 Recipe 
+### **1. Facebook demucs**
+Vocal and music (or ambient noise/background noise) separation.
+🔗 [https://github.com/facebookresearch/demucs](https://github.com/facebookresearch/demucs)
 
-### **1. Whisper (Transcription)**
-
+### **2. Whisper (Transcription)**
 Fast, accurate speech to text using Faster-Whisper
 🔗 [https://huggingface.co/deepdml/faster-whisper-large-v3-turbo-ct2](https://huggingface.co/deepdml/faster-whisper-large-v3-turbo-ct2)
 
-### **2. Pyannote (Speaker Diarization)**
+### **3. Pyannote (Speaker Diarization)**
 
 Identify multiple speakers in audio
 🔗 [https://github.com/pyannote/pyannote-audio](https://github.com/pyannote/pyannote-audio)
 
-### **3. Google AI Studio – Gemini 3 Pro Preview(Translation)**
+### **4. Google AI Studio – Gemini 3 Pro Preview(Translation)**
 Language translation
 🔗 [https://aistudio.google.com/](https://aistudio.google.com/)
 
-### **4. Chatterbox (Multilingual TTS + Voice Cloning)**
+### **5. Chatterbox (Multilingual TTS + Voice Cloning)**
 Generate cloned voices and multilingual audio
 🔗 [https://github.com/resemble-ai/chatterbox](https://github.com/resemble-ai/chatterbox)
 
-### **5. FFmpeg (Audio/Video Processing)**
+### **6. FFmpeg (Audio/Video Processing)**
 Trimming, mixing, converting, merging streams
 
-### **6. Python 3.11 (Logic / Processing)**
+### **7. Python 3.11 (Logic / Processing)**
 
-### 7. ChatGPT (Code Assistance)
+### 8. ChatGPT (Code Assistance)
 
 
 
