@@ -9,6 +9,7 @@ Run complete AI dubbing pipelines with **speaker diarization**, **voice cloning*
 ## 🚀 Run on Google Colab
 
 Run the full pipeline on a **free T4 GPU**:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/NeuralFalconYT/Video-Dubbing/blob/main/colab.ipynb)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/NeuralFalconYT/Video-Dubbing/blob/main/Run_On_Colab.ipynb)
 
