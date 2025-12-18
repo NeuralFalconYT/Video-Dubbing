@@ -289,7 +289,7 @@ def srt_to_dub(
     with open(json_path, "w", encoding="utf-8") as f:
       json.dump(json_result, f, ensure_ascii=False, indent=4)
 
-    redubbing_prompt=prepare_redub_data_and_get_prompt(json_path, language=language_name, threshold=1.2)
+    redubbing_prompt=prepare_redub_data_and_get_prompt(json_path, language=language_name, threshold=0.9)
     
     return json_result,json_path,redubbing_prompt
 
