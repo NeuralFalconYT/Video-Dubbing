@@ -230,7 +230,7 @@ def dubbing_ui():
               with gr.Accordion("✍️ Redub Prompt (TTS too long)", open=False):
                   redub_prompt=gr.Textbox(
                                        label="LLM Redubbing Prompt Copy & Paste this prompt in https://aistudio.google.com/",
-                                       lines=5,show_copy_button=True)
+                                       lines=15,show_copy_button=True)
 
       generate_speaker_btn.click(
           fn=extract_speakers_ui,
