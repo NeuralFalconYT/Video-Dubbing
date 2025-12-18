@@ -342,7 +342,7 @@ def dubbing(
     curr_dir=os.getcwd()
     json_path = os.path.join(curr_dir, "json_input.json")
     if redub and os.path.exists(json_path):
-        dubbing_json=make_json_for_redub(json_path,redub_json_string)
+        dubbing_json=make_json_for_redub(json_path,dubbing_json)
 
     json_result,json_path,redubbing_prompt=srt_to_dub(
         media_file,
