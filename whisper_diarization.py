@@ -225,6 +225,44 @@ def process_media(media_file,num_speakers,remove_music, make_small_segments,inpu
 
 
 
+def time_fix():
+    prompt = """
+⏱️ VERY IMPORTANT — DURATION-AWARE DUBBING RULE
+
+Each subtitle line has a FIXED speaking time defined by:
+(end_time - start_time).
+
+The target language can be ANY language.
+Different languages take different time to speak.
+For example:
+- Some languages can express ideas very quickly
+- Other languages may take longer to say the same meaning
+
+Your job is NOT to translate word-for-word.
+
+Your job is to ADAPT the dubbing text so that:
+- When spoken naturally by TTS (normal speed)
+- The audio FINISHES within the given duration
+- WITHOUT speeding up the voice
+
+RULES:
+1. If the translated or rewritten text would take TOO LONG to speak:
+   - Automatically shorten the sentence
+   - Remove unnecessary or filler words
+   - Compress ideas without losing meaning
+   - Prefer fewer, stronger words
+
+2. Keep the SAME meaning, emotion, and intent
+3. Do NOT add extra details or explanations
+4. Do NOT speed up speech
+5. Natural pacing is MORE important than literal translation
+
+Think like a voice actor:
+"What is the shortest natural sentence that still says the same thing?"
+
+Timing accuracy is MORE important than literal accuracy. But do not lose original meaning.
+"""
+    return prompt
 
 
 def prompt_translation(language):
@@ -249,7 +287,7 @@ Output in JSON format exactly like this:
   }}
 }}
 ```
-
+{time_fix()}
 **Guidelines for Translation:**
 
 1. **Understand the full context** before translating — read the entire subtitle file first.
@@ -282,7 +320,7 @@ Output in JSON format exactly like this:
 }}
 ```
 
-
+{time_fix()}
 **Guidelines for Grammar Fixing:**
 
 1.  **Understand the full context** before editing — read the entire subtitle file first.
@@ -304,7 +342,7 @@ Your task is to rewrite the given `.srt` subtitle file to make it sound more nat
 while preserving timing, context, emotional tone, and meaning.
 
 
-
+{time_fix()}
 Output in JSON format exactly like this:
 ```json
 {{
@@ -340,7 +378,7 @@ def prompt_translate_and_rewrite(language):
 Your job is to translate the given `.srt` subtitle file into **{language}**, 
 and then rewrite each translated line so it sounds **natural, expressive, and dubbing-friendly** — 
 while preserving timing, emotional tone, and the original meaning.
-
+{time_fix()}
 🧠 **Important clarification of "Rewrite":**
 "Rewrite" means: keep the same meaning, tone, and intent as the original line,
 but express it in more natural and conversational {language} — not word-for-word translation.
