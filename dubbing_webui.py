@@ -200,7 +200,7 @@ def dubbing_ui():
                   need_video=gr.Checkbox(value=True, label="🎬 Make Video ?")
                   want_subtitle = gr.Checkbox(value=True, label="Generate Subtitles for the dubbed audio?")
               with gr.Accordion("Redub", open=False):
-                      redub = gr.Checkbox(value=True,label="🎬 Redub due to long TTS")
+                      redub = gr.Checkbox(value=False,label="🎬 Redub due to long TTS")
 
           with gr.Column(scale=2):
               gr.Markdown("### 🗣️ Speaker Reference Audio")
