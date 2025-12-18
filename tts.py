@@ -278,8 +278,8 @@ def clone_voice( text,
     chunks = split_into_chunks(text,language_id, max_char_limit=300)
     temp_dir = tempfile.mkdtemp(prefix="audio_chunks_")
     temp_files = []
-    for idx, chunk in tqdm(enumerate(chunks), total=len(chunks), desc="Generating audio"):
-
+    # for idx, chunk in tqdm(enumerate(chunks), total=len(chunks), desc="Generating audio"):
+    for idx, chunk in enumerate(chunks):
       # print(len(chunk))
       # print(chunk)
       # print(chunk_path)
@@ -295,7 +295,7 @@ def clone_voice( text,
             cfgw_input
         )
         sf.write(chunk_path, audio, sr)
-        print(sr)
+        # print(sr)
         temp_files.append(chunk_path)
       except Exception as e:
         print(f"⚠️ [Chunk {idx}] Generation failed: {e}")
