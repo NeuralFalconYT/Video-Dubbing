@@ -251,12 +251,14 @@ def srt_to_dub(
               preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
               print(preview)
               make_silence(actual_duration, raw_path)
-        # print(raw_path)
+
+                 
         if os.path.exists(raw_path):
-          if raw_path!=save_path:
-              shutil.copy(raw_path,save_path)
+            if not os.path.samefile(raw_path, save_path):
+                shutil.copy(raw_path,save_path)
         else:
-          make_silence(actual_duration, save_path)
+            make_silence(actual_duration, save_path)
+            
         tts_duration=get_duration(path=save_path) if os.path.exists(save_path) else 0.0
         gap=tts_duration-actual_duration
         if gap>0:
