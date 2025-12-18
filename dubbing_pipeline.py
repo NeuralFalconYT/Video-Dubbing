@@ -14,6 +14,110 @@ from audio_sync_pipeline import audio_sync
 from tqdm.auto import tqdm
 
 
+
+
+
+def redub_prompt(redub_json, language="target language", threshold=1.3):
+    if language=="Hindi":
+        language="Hindi Devanagari"
+    prompt = f"""
+You are a professional subtitle translator and dialogue editor for VIDEO DUBBING.
+
+Your job is to IMPROVE dubbing accuracy by SHORTENING the dubbing text when needed,
+without changing the meaning, tone, or emotion.
+
+You will receive input in JSON format.
+Each object represents ONE spoken sentence in a video.
+
+IMPORTANT CONTEXT:
+- "text" = original spoken sentence (source language)
+- "dubbing" = current translated dubbing sentence (target language)
+- "start" and "end" = original speaker timing (seconds)
+- "tts_actual_duration_diff" =
+  (TTS generated duration) MINUS (original speaker duration)
+
+MEANING OF tts_actual_duration_diff:
+- POSITIVE value (+) → TTS audio is LONGER than original timing ❌
+- NEGATIVE value (−) → TTS audio is SHORTER than original timing ✅ (OK)
+- We ONLY care about POSITIVE values
+
+RULES:
+1. If "tts_actual_duration_diff" is POSITIVE and GREATER THAN {threshold} seconds:
+   - The dubbing text is TOO LONG
+   - You MUST rewrite the "dubbing" text to be SHORTER
+   - Keep the meaning, style, and natural spoken flow
+   - Do NOT speed up speech
+   - Do NOT change start/end times
+   - Do NOT add explanations
+
+2. If "tts_actual_duration_diff" is LESS THAN OR EQUAL TO {threshold} seconds
+   OR NEGATIVE:
+   - Keep the "dubbing" text unchanged
+
+3. Your output MUST:
+   - Be valid JSON ONLY
+   - Match the input structure exactly
+   - Include ONLY these fields:
+     - text
+     - dubbing
+     - start
+     - end
+     - speaker_id
+   - Do NOT include tts_actual_duration_diff in output
+
+OUTPUT FORMAT (STRICT):
+
+{{
+  "sentence_number": {{
+    "text": "original text",
+    "dubbing": "shortened, natural, dubbing-friendly {language} translation",
+    "start": start_time,
+    "end": end_time,
+    "speaker_id": speaker_id
+  }}
+}}
+
+IMPORTANT:
+- Do NOT explain your changes
+- Do NOT add extra keys
+- Do NOT change sentence order
+- Output JSON ONLY
+- Only process the sentence IDs provided.
+- Do NOT assume missing sentence IDs exist.
+- Do NOT create new sentences.
+
+INPUT JSON:
+{json.dumps(redub_json, ensure_ascii=False, indent=2)}
+"""
+    return prompt
+
+def prepare_redub_data_and_get_prompt(json_path, language="target language", threshold=1.3):
+  with open(json_path, "r", encoding="utf-8") as f:
+      data = json.load(f)
+
+
+  redub_json={}
+  for i in data['segments']:
+    temp_data=data['segments'][i]
+    # print(temp_data)
+    value = float(temp_data['tts_actual_duration_diff'])
+    rounded = f"{value:+.2f}"
+    if value>=threshold:
+      redub_json[str(i)]={
+        "text": temp_data['text'],
+        "dubbing": temp_data['dubbing'],
+        "start": temp_data['start'],
+        "end": temp_data['end'],
+        "tts_actual_duration_diff": rounded,
+        "speaker_id": temp_data['speaker_id'],
+      }
+  # Call the 'redub_prompt' from cell oBOf2axfhh9Z which expects a dict.
+  # This works because this function's new name avoids overwriting it.
+  prompt=redub_prompt(redub_json, language=language, threshold=threshold)
+  return prompt
+
+
+
 def make_silence(duration_sec, path):
     """Generate silent audio of given duration (sec)"""
     AudioSegment.silent(duration=duration_sec * 1000).export(path, format="wav")
@@ -145,7 +249,10 @@ def srt_to_dub(
     json_result["segments"]=dubbing_dict
     with open(json_path, "w", encoding="utf-8") as f:
       json.dump(json_result, f, ensure_ascii=False, indent=4)
-    return json_result,json_path
+
+    redubbing_prompt=prepare_redub_data_and_get_prompt(json_path, language=language_name, threshold=1.2)
+    
+    return json_result,json_path,redubbing_prompt
 
 
 # --------------------------
@@ -162,7 +269,7 @@ def dubbing(
     cfgw_input=0.5,
     want_subtile=False,
 ):
-    json_result,json_path=srt_to_dub(
+    json_result,json_path,redubbing_prompt=srt_to_dub(
         media_file,
         dubbing_json,
         speaker_voice,
@@ -176,4 +283,4 @@ def dubbing(
     default_srt,custom_srt, word_srt, shorts_srt=None,None,None,None
     if want_subtile:
          default_srt, translated_srt_path, custom_srt, word_srt, shorts_srt, txt_path,sentence_json,word_json, transcript= subtitle_maker(save_path, language_name, language_name)
-    return save_path ,save_path,default_srt,custom_srt, word_srt, shorts_srt
+    return save_path ,save_path,default_srt,custom_srt, word_srt, shorts_srt,redubbing_prompt
