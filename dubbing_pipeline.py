@@ -130,20 +130,33 @@ def srt_to_dub(
     exaggeration_input=0.5,
     temperature_input=0.8,
     cfgw_input=0.5,
+    redub=False,
 ):
 
 
-
+    
     #create folders
     temp_folder = "./dubbing_temp"
-    if os.path.exists(temp_folder):
-        shutil.rmtree(temp_folder)
+    if not redub:
+        if os.path.exists(temp_folder):
+            shutil.rmtree(temp_folder)
     os.makedirs(temp_folder, exist_ok=True)
+    
     dub_save_folder="./dubbing_result"
     os.makedirs(dub_save_folder, exist_ok=True)
+    
     curr_dir=os.getcwd()
     json_path = os.path.join(curr_dir, "json_input.json")
-
+    
+    old_json={}
+    if redub and os.path.exists(json_path):
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                old_json = json.load(f)
+        except json.JSONDecodeError:
+            old_json = {}
+        
+         
     #get media_duration for ending silence
     last_id = list(dubbing_json.keys())[-1]
     actual_media_duration = get_media_duration(media_file)
@@ -175,6 +188,7 @@ def srt_to_dub(
         starting_silence = seg.get('starting_silence', 0)
         speaker_id = seg['speaker_id']
         raw_text = seg['raw_text']
+        redub_tts=seg.get('redub', False)
         # print(f"spekaker id : {speaker_id}")
         # print(f"speaker voice: {speaker_voice}")
         spk_info = speaker_voice.get(speaker_id, {})
@@ -183,7 +197,7 @@ def srt_to_dub(
         fixed_seed = spk_info.get("fixed_seed", 0)
         avg_speed = spk_info.get("avg_talk_speed", 1.0)
         seed_num_input=fixed_seed
-
+        
         if segment_id == last_id:
             ending_silence = max(0, media_duration - end)
         else:
@@ -198,23 +212,45 @@ def srt_to_dub(
         # print(f"temperature_input: {temperature_input}")
         # print(f"seed_num_input: {seed_num_input}")
         # print(f"cfgw_input: {cfgw_input}")
-        try:
-          raw_path = clone_voice_streaming(
-                      text,
-                      reference_audio,
-                      language_name,
-                      exaggeration_input,
-                      temperature_input,
-                      seed_num_input,
-                      cfgw_input,
-                      stereo=False,
-                      remove_silence=False,
-                  )
-        except Exception as e:
-          print(f"Audio Generation Failed")
-          preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
-          print(preview)
-          make_silence(actual_duration, raw_path)
+             
+        if redub==True and redub_tts==True:
+            try:
+              raw_path = clone_voice_streaming(
+                          text,
+                          reference_audio,
+                          language_name,
+                          exaggeration_input,
+                          temperature_input,
+                          seed_num_input,
+                          cfgw_input,
+                          stereo=False,
+                          remove_silence=False,
+                      )
+            except Exception as e:
+              print(f"Audio Generation Failed")
+              preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
+              print(preview)
+              make_silence(actual_duration, raw_path)
+        if redub==True and redub_tts==False:
+            raw_path=old_json["segments"][segment_id]['tts_path']
+        if redub==False:   
+            try:
+              raw_path = clone_voice_streaming(
+                          text,
+                          reference_audio,
+                          language_name,
+                          exaggeration_input,
+                          temperature_input,
+                          seed_num_input,
+                          cfgw_input,
+                          stereo=False,
+                          remove_silence=False,
+                      )
+            except Exception as e:
+              print(f"Audio Generation Failed")
+              preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
+              print(preview)
+              make_silence(actual_duration, raw_path)
         # print(raw_path)
         if os.path.exists(raw_path):
           shutil.copy(raw_path,save_path)
@@ -255,6 +291,39 @@ def srt_to_dub(
     return json_result,json_path,redubbing_prompt
 
 
+
+
+def make_json_for_redub(json_path,redub_json_string):
+  with open(json_path, "r", encoding="utf-8") as f:
+      data = json.load(f)
+  redub_input=json.loads(redub_json_string)
+  redub_json={}
+  for i in data['segments']:
+    
+    temp_data=data['segments'][i]
+    redub=False
+    dubbing_text=temp_data['dubbing']
+    if i in redub_input.keys():
+      dubbing_text=redub_input[i]['dubbing']
+      redub=True
+
+    redub_json[i]={
+      "raw_text": temp_data['text'],
+      "text": dubbing_text,
+      "start": temp_data['start'],
+      "end": temp_data['end'],
+      "speaker_id": temp_data['speaker_id'],
+      "redub":redub,
+      "duration": temp_data['actual_duration'],
+      "starting_silence": temp_data['starting_silence'],
+      
+    }
+  return redub_json
+
+
+
+
+
 # --------------------------
 # Step 6: Main dubbing function
 # --------------------------
@@ -268,7 +337,13 @@ def dubbing(
     temperature_input=0.8,
     cfgw_input=0.5,
     want_subtile=False,
-):
+    redub=False
+):    
+    curr_dir=os.getcwd()
+    json_path = os.path.join(curr_dir, "json_input.json")
+    if redub=True and os.path.exists(json_path):
+        dubbing_json=make_json_for_redub(json_path,redub_json_string)
+
     json_result,json_path,redubbing_prompt=srt_to_dub(
         media_file,
         dubbing_json,
@@ -277,6 +352,7 @@ def dubbing(
         exaggeration_input,
         temperature_input,
         cfgw_input,
+        redub,
 
     )
     save_path=audio_sync(json_path)
