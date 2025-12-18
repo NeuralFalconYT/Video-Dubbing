@@ -254,7 +254,7 @@ def srt_to_dub(
 
                  
         if os.path.exists(raw_path):
-            if not os.path.samefile(raw_path, save_path):
+            if not os.path.exists(save_path):
                 shutil.copy(raw_path,save_path)
         else:
             make_silence(actual_duration, save_path)
