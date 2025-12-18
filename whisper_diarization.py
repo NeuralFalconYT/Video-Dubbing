@@ -374,6 +374,9 @@ Output must be in JSON format exactly like this:
                                           
 def prompt_maker(transcription,target_language, task="Translation"):
     txt_path="./temp.txt"
+    if target_language=="Hindi":
+        target_language="Hindi Devanagari"
+     
     with open(txt_path, 'w', encoding='utf-8') as f:
         f.write(transcription)
         if task == "Translation":
