@@ -161,7 +161,7 @@ However, this approach has limitations:
 * Requires a **local LLM** (needs a strong GPU), **or**
 * Requires a **paid API**,
   Both of which may be impractical for many users.
-
+#### ✅ Redubbing support has been added, but the current user interface is still rough. This feature is designed for manual copy-paste LLM prompts (Gemini, ChatGPT, or other LLMs), allowing sentence shortening without relying on paid API calls.
 ---
 
 ### **Problem 2: No Emotion Matching in Dubbing**
