@@ -13,10 +13,9 @@ MAX_SPEAKERS = 10
 
 # --- CORRECTED AND IMPROVED FUNCTION ---
 
-def make_json_for_redub(json_path,redub_json_string):
+def make_json_for_redub(json_path,redub_input):
   with open(json_path, "r", encoding="utf-8") as f:
       data = json.load(f)
-  redub_input=json.loads(redub_json_string)
   redub_json={}
   for i in data['segments']:
     
@@ -56,7 +55,8 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
             curr_dir=os.getcwd()
             json_path = os.path.join(curr_dir, "json_input.json")
             if os.path.exists(json_path):
-                dubbing_json=make_json_for_redub(json_path,llm_result_text)
+                redub_input=json.loads(llm_result_text)
+                dubbing_json=make_json_for_redub(json_path,redub_input)
                 dubbing_json=llm_data    
         speaker_ids = sorted(list(set(int(item["speaker_id"]) for item in dubbing_json.values())))
     except (json.JSONDecodeError, KeyError, TypeError) as e:
