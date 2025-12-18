@@ -253,7 +253,8 @@ def srt_to_dub(
               make_silence(actual_duration, raw_path)
         # print(raw_path)
         if os.path.exists(raw_path):
-          shutil.copy(raw_path,save_path)
+          if raw_path!=save_path:
+              shutil.copy(raw_path,save_path)
         else:
           make_silence(actual_duration, save_path)
         tts_duration=get_duration(path=save_path) if os.path.exists(save_path) else 0.0
