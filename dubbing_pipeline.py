@@ -293,32 +293,32 @@ def srt_to_dub(
 
 
 
-def make_json_for_redub(json_path,redub_json_string):
-  with open(json_path, "r", encoding="utf-8") as f:
-      data = json.load(f)
-  redub_input=json.loads(redub_json_string)
-  redub_json={}
-  for i in data['segments']:
+# def make_json_for_redub(json_path,redub_json_string):
+#   with open(json_path, "r", encoding="utf-8") as f:
+#       data = json.load(f)
+#   redub_input=json.loads(redub_json_string)
+#   redub_json={}
+#   for i in data['segments']:
     
-    temp_data=data['segments'][i]
-    redub=False
-    dubbing_text=temp_data['dubbing']
-    if i in redub_input.keys():
-      dubbing_text=redub_input[i]['dubbing']
-      redub=True
+#     temp_data=data['segments'][i]
+#     redub=False
+#     dubbing_text=temp_data['dubbing']
+#     if i in redub_input.keys():
+#       dubbing_text=redub_input[i]['dubbing']
+#       redub=True
 
-    redub_json[i]={
-      "raw_text": temp_data['text'],
-      "text": dubbing_text,
-      "start": temp_data['start'],
-      "end": temp_data['end'],
-      "speaker_id": temp_data['speaker_id'],
-      "redub":redub,
-      "duration": temp_data['actual_duration'],
-      "starting_silence": temp_data['starting_silence'],
+#     redub_json[i]={
+#       "raw_text": temp_data['text'],
+#       "text": dubbing_text,
+#       "start": temp_data['start'],
+#       "end": temp_data['end'],
+#       "speaker_id": temp_data['speaker_id'],
+#       "redub":redub,
+#       "duration": temp_data['actual_duration'],
+#       "starting_silence": temp_data['starting_silence'],
       
-    }
-  return redub_json
+#     }
+#   return redub_json
 
 
 
@@ -339,10 +339,10 @@ def dubbing(
     want_subtile=False,
     redub=False
 ):    
-    curr_dir=os.getcwd()
-    json_path = os.path.join(curr_dir, "json_input.json")
-    if redub and os.path.exists(json_path):
-        dubbing_json=make_json_for_redub(json_path,dubbing_json)
+    # curr_dir=os.getcwd()
+    # json_path = os.path.join(curr_dir, "json_input.json")
+    # if redub and os.path.exists(json_path):
+    #     dubbing_json=make_json_for_redub(json_path,dubbing_json)
 
     json_result,json_path,redubbing_prompt=srt_to_dub(
         media_file,
