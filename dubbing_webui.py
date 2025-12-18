@@ -13,19 +13,51 @@ MAX_SPEAKERS = 10
 
 # --- CORRECTED AND IMPROVED FUNCTION ---
 
-# --- FINAL, IMPROVED FUNCTION with Progress Bar and Disabled Inputs ---
+def make_json_for_redub(json_path,redub_json_string):
+  with open(json_path, "r", encoding="utf-8") as f:
+      data = json.load(f)
+  redub_input=json.loads(redub_json_string)
+  redub_json={}
+  for i in data['segments']:
+    
+    temp_data=data['segments'][i]
+    redub=False
+    dubbing_text=temp_data['dubbing']
+    if i in redub_input.keys():
+      dubbing_text=redub_input[i]['dubbing']
+      redub=True
 
-def extract_speakers_ui(media_file, have_music, llm_result_text, progress=gr.Progress()):
+    redub_json[i]={
+      "raw_text": temp_data['text'],
+      "text": dubbing_text,
+      "start": temp_data['start'],
+      "end": temp_data['end'],
+      "speaker_id": temp_data['speaker_id'],
+      "redub":redub,
+      "duration": temp_data['actual_duration'],
+      "starting_silence": temp_data['starting_silence'],
+      
+    }
+  return redub_json
+# --- FINAL, IMPROVED FUNCTION with Progress Bar and Disabled Inputs ---
+media_file, have_music, llm_result,redub
+def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=gr.Progress()):
     if not media_file or not os.path.exists(media_file):
         raise gr.Error("Please provide a valid media file path.")
     if not llm_result_text:
         raise gr.Error("Please paste the translation JSON to extract speakers.")
 
     # --- Stage 1: Fast initial processing and first UI update ---
+    llm_data = json.loads(llm_result_text)
+    dubbing_json = get_dubbing_json(llm_data)
     try:
         progress(0, desc="Parsing JSON and preparing...")
-        llm_data = json.loads(llm_result_text)
-        dubbing_json = get_dubbing_json(llm_data)
+        if redub:
+            curr_dir=os.getcwd()
+            json_path = os.path.join(curr_dir, "json_input.json")
+            if os.path.exists(json_path):
+                dubbing_json=make_json_for_redub(json_path,llm_result_text)
+                dubbing_json=llm_data    
         speaker_ids = sorted(list(set(int(item["speaker_id"]) for item in dubbing_json.values())))
     except (json.JSONDecodeError, KeyError, TypeError) as e:
         raise gr.Error(f"Invalid JSON format or structure: {e}")
@@ -234,7 +266,7 @@ def dubbing_ui():
 
       generate_speaker_btn.click(
           fn=extract_speakers_ui,
-          inputs=[media_file, have_music, llm_result],
+          inputs=[media_file, have_music, llm_result,redub],
           outputs=[dubbing_json_state, speaker_voice_state, speaker_summary, *speaker_audios]
       )
 
