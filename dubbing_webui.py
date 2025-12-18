@@ -82,10 +82,14 @@ def extract_speakers_ui(media_file, have_music, llm_result_text, progress=gr.Pro
     final_summary = f"✅ Detected {len(speaker_voice)} speaker(s). You can replace their voices below."
     yield dubbing_json, speaker_voice, gr.update(value=final_summary, visible=True), *final_updates
 
+
+
+
+
 # --- FIXED FUNCTION ---
 def start_dubbing_ui(
     media_file, language_name, have_music, want_subtitle, llm_result_text,
-    exaggeration, cfg_weight, temp,need_video,recover_audio,
+    exaggeration, cfg_weight, temp,need_video,recover_audio,redub
     dubbing_json_state, speaker_voice_state,
     *speaker_audios
 ):
@@ -120,7 +124,7 @@ def start_dubbing_ui(
             # in 'updated_speaker_voice' from the initial extraction step. No action is needed.
 
     # Now call the main dubbing function with the correctly updated speaker voice mapping.
-    dubbed_audio_path, dubbed_audio_file, returned_custom_srt, returned_default_srt, returned_word_srt, returned_shorts_srt = dubbing(
+    dubbed_audio_path, dubbed_audio_file, returned_custom_srt, returned_default_srt, returned_word_srt, returned_shorts_srt ,redubbing_prompt= dubbing(
         media_file=media_file,
         dubbing_json=dubbing_json_state,
         speaker_voice=updated_speaker_voice,
@@ -128,7 +132,8 @@ def start_dubbing_ui(
         exaggeration_input=exaggeration,
         temperature_input=temp,
         cfgw_input=cfg_weight,
-        want_subtile=want_subtitle
+        want_subtile=want_subtitle,
+        redub=redub,
     )
 
     dubbed_audio_with_music=None
@@ -164,7 +169,8 @@ def start_dubbing_ui(
         returned_shorts_srt,
         dubbed_audio_file,
         dubbed_audio_with_music,
-        video_path
+        video_path,
+        redubbing_prompt
     )
 
 
@@ -193,6 +199,8 @@ def dubbing_ui():
                   recover_audio=gr.Checkbox(value=True, label="🎧 Restore background music and ambience ?")
                   need_video=gr.Checkbox(value=True, label="🎬 Make Video ?")
                   want_subtitle = gr.Checkbox(value=True, label="Generate Subtitles for the dubbed audio?")
+              with gr.Accordion("Redub", open=False):
+                      redub = gr.Checkbox(value=True,label="🎬 Redub due to long TTS")
 
           with gr.Column(scale=2):
               gr.Markdown("### 🗣️ Speaker Reference Audio")
@@ -219,6 +227,10 @@ def dubbing_ui():
                   output_audio_file = gr.File(label="🎵 Download Dubbed Audio")
                   output_audio_music_file= gr.File(label="🎶 Download Dubbed Voice + Restored Background & Ambience")
                   video_path = gr.File(label="🎞️ Download Video")
+              with gr.Accordion("✍️ Redub Prompt (TTS too long)", open=False):
+                  redub_prompt=gr.Textbox(
+                                       label="LLM Redubbing Prompt Copy & Paste this prompt in https://aistudio.google.com/",
+                                       lines=5,show_copy_button=True)
 
       generate_speaker_btn.click(
           fn=extract_speakers_ui,
@@ -230,7 +242,7 @@ def dubbing_ui():
           fn=start_dubbing_ui,
           inputs=[
               media_file, language_name, have_music, want_subtitle, llm_result,
-              exaggeration, cfg_weight, temp,need_video,recover_audio,
+              exaggeration, cfg_weight, temp,need_video,recover_audio,redub,
               dubbing_json_state, speaker_voice_state,
               *speaker_audios
           ],
@@ -244,7 +256,8 @@ def dubbing_ui():
               shorts_srt,
               output_audio_file,
               output_audio_music_file,
-              video_path
+              video_path,
+              redub_prompt
           ]
       )
   return demo
