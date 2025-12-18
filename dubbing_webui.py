@@ -156,6 +156,11 @@ def start_dubbing_ui(
             # in 'updated_speaker_voice' from the initial extraction step. No action is needed.
 
     # Now call the main dubbing function with the correctly updated speaker voice mapping.
+    if redub:
+      curr_dir=os.getcwd()
+      json_path = os.path.join(curr_dir, "json_input.json")
+      if os.path.exists(json_path):
+        dubbing_json_state=make_json_for_redub(json_path,dubbing_json_state)
     print(dubbing_json_state)
     dubbed_audio_path, dubbed_audio_file, returned_custom_srt, returned_default_srt, returned_word_srt, returned_shorts_srt ,redubbing_prompt= dubbing(
         media_file=media_file,
