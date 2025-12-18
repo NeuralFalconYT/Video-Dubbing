@@ -216,6 +216,7 @@ def get_dubbing_json(raw_json, silence_threshold=0.6, max_merged_duration=10.0):
 
         dubbing_json[str(out_idx)] = {
             "text": text,
+            "raw_text": raw_text,
             "starting_silence": starting_silence,
             "start": start,
             "end": end,
