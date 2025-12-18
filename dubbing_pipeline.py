@@ -124,7 +124,7 @@ def srt_to_dub(
             'start': start,
             'end': end,
             'speaker_id': speaker_id,
-            'tts_duration_gap': tts_duration-actual_duration,
+            'tts_duration_gap': str(tts_duration-actual_duration),
             'actual_duration': actual_duration,
             'speaker_speed': avg_speed,
             'starting_silence': starting_silence,
