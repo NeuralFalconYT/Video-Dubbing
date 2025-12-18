@@ -92,7 +92,7 @@ def generate_tts_audio(
     if seed_num_input != 0:
         set_seed(int(seed_num_input))
 
-    print(f"Generating audio for text: '{text_input[:50]}...'")
+    # print(f"Generating audio for text: '{text_input[:50]}...'")
 
     # Handle optional audio prompt
     chosen_prompt = audio_prompt_path_input or default_audio_for_ui(language_id)
@@ -104,7 +104,7 @@ def generate_tts_audio(
     }
     if chosen_prompt:
         generate_kwargs["audio_prompt_path"] = chosen_prompt
-        print(f"Using audio prompt: {chosen_prompt}")
+        # print(f"Using audio prompt: {chosen_prompt}")
     else:
         print("No audio prompt provided; using default voice.")
 
@@ -113,7 +113,7 @@ def generate_tts_audio(
         language_id=language_id,
         **generate_kwargs
     )
-    print("Audio generation complete.")
+    # print("Audio generation complete.")
     return current_model.sr, wav.squeeze(0).numpy()
 
 
