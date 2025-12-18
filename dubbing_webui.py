@@ -40,7 +40,7 @@ def make_json_for_redub(json_path,redub_json_string):
     }
   return redub_json
 # --- FINAL, IMPROVED FUNCTION with Progress Bar and Disabled Inputs ---
-media_file, have_music, llm_result,redub
+
 def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=gr.Progress()):
     if not media_file or not os.path.exists(media_file):
         raise gr.Error("Please provide a valid media file path.")
