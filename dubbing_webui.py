@@ -156,6 +156,7 @@ def start_dubbing_ui(
             # in 'updated_speaker_voice' from the initial extraction step. No action is needed.
 
     # Now call the main dubbing function with the correctly updated speaker voice mapping.
+    print(dubbing_json_state)
     dubbed_audio_path, dubbed_audio_file, returned_custom_srt, returned_default_srt, returned_word_srt, returned_shorts_srt ,redubbing_prompt= dubbing(
         media_file=media_file,
         dubbing_json=dubbing_json_state,
