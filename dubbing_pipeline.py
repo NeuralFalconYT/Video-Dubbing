@@ -116,7 +116,11 @@ def srt_to_dub(
           shutil.copy(raw_path,save_path)
         else:
           make_silence(actual_duration, save_path)
-
+        gap=tts_duration-actual_duration
+        if gap>0:
+            gap=f"+{gap}"
+        else:
+            gap=str(gap)
         tts_duration=get_duration(path=save_path) if os.path.exists(save_path) else 0.0
         dubbing_dict[segment_id] = {
             'text': raw_text,
@@ -124,7 +128,7 @@ def srt_to_dub(
             'start': start,
             'end': end,
             'speaker_id': speaker_id,
-            'tts_duration_gap': str(tts_duration-actual_duration),
+            'tts_actual_duration_diff': gap,
             'actual_duration': actual_duration,
             'speaker_speed': avg_speed,
             'starting_silence': starting_silence,
