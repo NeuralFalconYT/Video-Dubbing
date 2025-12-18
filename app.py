@@ -3,6 +3,9 @@ import gradio as gr
 from tts_webui import tts_ui
 from whisper_diarization_webui import transcript_ui
 from dubbing_webui import dubbing_ui
+import logging, warnings
+logging.disable(logging.CRITICAL)
+warnings.filterwarnings("ignore")
 
 
 
