@@ -161,7 +161,7 @@ def start_dubbing_ui(
       json_path = os.path.join(curr_dir, "json_input.json")
       if os.path.exists(json_path):
         dubbing_json_state=make_json_for_redub(json_path,dubbing_json_state)
-    print(dubbing_json_state)
+    # print(dubbing_json_state)
     dubbed_audio_path, dubbed_audio_file, returned_custom_srt, returned_default_srt, returned_word_srt, returned_shorts_srt ,redubbing_prompt= dubbing(
         media_file=media_file,
         dubbing_json=dubbing_json_state,
