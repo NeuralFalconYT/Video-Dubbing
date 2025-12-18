@@ -11,6 +11,7 @@ from pydub import AudioSegment
 import uuid
 import shutil
 from audio_sync_pipeline import audio_sync
+from tqdm.auto import tqdm
 
 
 def make_silence(duration_sec, path):
@@ -55,7 +56,13 @@ def srt_to_dub(
                  "segments":{}}
     dubbing_dict={ }
 
-    for i, segment_id in enumerate(dubbing_json, 1):
+    # for i, segment_id in enumerate(dubbing_json, 1):
+    
+    for i, segment_id in enumerate(
+        tqdm(dubbing_json.keys(),
+             total=len(dubbing_json),
+             desc="Generating dubbed segments"),1):
+                 
         seg = dubbing_json[segment_id]
         text = seg['text']
         start = seg['start']
