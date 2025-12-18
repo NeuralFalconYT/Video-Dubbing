@@ -89,7 +89,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text, progress=gr.Pro
 # --- FIXED FUNCTION ---
 def start_dubbing_ui(
     media_file, language_name, have_music, want_subtitle, llm_result_text,
-    exaggeration, cfg_weight, temp,need_video,recover_audio,redub
+    exaggeration, cfg_weight, temp,need_video,recover_audio,redub,
     dubbing_json_state, speaker_voice_state,
     *speaker_audios
 ):
