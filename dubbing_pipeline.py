@@ -70,6 +70,7 @@ def srt_to_dub(
         actual_duration = seg['duration']
         starting_silence = seg.get('starting_silence', 0)
         speaker_id = seg['speaker_id']
+        raw_text = seg['raw_text']
         # print(f"spekaker id : {speaker_id}")
         # print(f"speaker voice: {speaker_voice}")
         spk_info = speaker_voice.get(speaker_id, {})
@@ -118,16 +119,17 @@ def srt_to_dub(
 
 
         dubbing_dict[segment_id] = {
-            'text': text,
+            'text': raw_text,
+            'dubbing':text,
             'start': start,
             'end': end,
+            'speaker_id': speaker_id,
             'actual_duration': actual_duration,
             'speaker_speed': avg_speed,
             'starting_silence': starting_silence,
             'ending_silence': ending_silence,
             'tts_path':  os.path.abspath(save_path),
             'tts_duration': get_duration(path=save_path) if os.path.exists(save_path) else 0.0,
-            'speaker_id': speaker_id,
             'language': language_name,
             'exaggeration': exaggeration_input,
             'temperature': temperature_input,
