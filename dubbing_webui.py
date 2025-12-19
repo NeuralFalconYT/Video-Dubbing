@@ -88,7 +88,14 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
 
     # --- Stage 2: Slow background processing with progress tracking ---
     progress(0.5, desc="Extracting speaker voices from media. This may take a minute...")
-    speaker_voice = get_speakers(media_file, have_music, llm_data)
+    curr_dir=os.getcwd()
+    json_path = os.path.join(curr_dir, "json_input.json")
+    if redub and os.path.exists(json_path):
+        with open(json_path, "r", encoding="utf-8") as f:
+          data = json.load(f)
+        speaker_voice=data['speaker_voice'] 
+    else:  
+      speaker_voice = get_speakers(media_file, have_music, llm_data)
     speaker_voice = {int(k): v for k, v in speaker_voice.items()}
     progress(1, desc="Extraction Complete!")
 
