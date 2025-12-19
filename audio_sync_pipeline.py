@@ -124,14 +124,19 @@ def dubbing_algorithm(segments_data, final_audio_save_path):
             capped = True
             speedup_factor = MIN_SPEED
 
-        
-        # Normal Speed Up    
-        if abs(speedup_factor - 1.0) > 0.01:
-           change_speed(temp_segment_path, final_timed_path, speedup_factor)
+        #skip small duration but speed up
+        small_max_speed = 2.5   # only for very short segments
+        SMALL_DURATION = 1.3   # seconds
+        if speedup_factor > small_max_speed and actual_duration <= SMALL_DURATION:
+           print(f"⚠️ Skipping segment {i+1}: required speed {speedup_factor:.2f}× exceeds short-segment limit ({small_max_speed:.2f}×). Silence inserted.")
+           make_silence(actual_duration, final_timed_path)
         # Too aggressive → skip speech
         elif speedup_factor > MAX_SPEED:
-            print(f"⚠️ Skipping segment {i+1}: required speed {speedup_factor:.2f}× exceeds max allowed {MAX_SPEED:.2f}....Using silence instead.")
-            make_silence(actual_duration, final_timed_path)
+           print(f"⚠️ Skipping segment {i+1}: required speed {speedup_factor:.2f}× exceeds safe limit ({MAX_SPEED:.2f}×). Silence inserted.")
+           make_silence(actual_duration, final_timed_path)
+        # Normal Speed Up    
+        elif abs(speedup_factor - 1.0) > 0.01:
+           change_speed(temp_segment_path, final_timed_path, speedup_factor)
         else:
             shutil.copy(temp_segment_path, final_timed_path)
 
