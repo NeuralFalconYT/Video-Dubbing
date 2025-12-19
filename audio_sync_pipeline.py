@@ -64,6 +64,12 @@ def reduce_internal_silence(file_path, output_path, min_silence_duration_ms=100,
     combined.export(output_path, format="wav")
     return output_path
 
+
+def make_silence(duration_sec, path):
+    """Generate silent audio of given duration (sec)"""
+    AudioSegment.silent(duration=duration_sec * 1000).export(path, format="wav")
+
+
 # --- Core Algorithm
 def dubbing_algorithm(segments_data, final_audio_save_path):
     """
@@ -78,7 +84,7 @@ def dubbing_algorithm(segments_data, final_audio_save_path):
     sorted_segments = sorted(segments_data.values(), key=lambda x: x['start'])
 
     MIN_SPEED = 0.8  # <-- minimum playback speed limit
-
+    MAX_SPEED=4 # <-- Skip tts with silence 
     for i, segment in enumerate(sorted_segments):
         tts_path = segment['tts_path']
         actual_duration = segment['actual_duration']
@@ -118,8 +124,13 @@ def dubbing_algorithm(segments_data, final_audio_save_path):
             capped = True
             speedup_factor = MIN_SPEED
 
+        
+        # Normal Speed Up    
         if abs(speedup_factor - 1.0) > 0.01:
-            change_speed(temp_segment_path, final_timed_path, speedup_factor)
+           change_speed(temp_segment_path, final_timed_path, speedup_factor)
+        # Too aggressive → skip speech
+        elif speedup_factor > MAX_SPEED:
+            make_silence(actual_duration, final_timed_path)
         else:
             shutil.copy(temp_segment_path, final_timed_path)
 
