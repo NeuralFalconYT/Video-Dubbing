@@ -315,9 +315,9 @@ def clone_voice( text,
         # print(sr)
         temp_files.append(chunk_path)
       except Exception as e:
-        print(f"⚠️ [Chunk {idx}] Generation failed: {e}")
-        print(f"Text: {chunk}")
-        print(f"Length: {len(chunk)}")
+        # print(f"⚠️ [Chunk {idx}] Generation failed: {e}")
+        # print(f"Text: {chunk}")
+        # print(f"Length: {len(chunk)}")
         continue  # Skip failed chunk
             # Merge all valid chunks
     final_audio = []
@@ -500,7 +500,8 @@ def clone_voice_streaming(
 
     # Open final file for writing, append each chunk
     with sf.SoundFile(final_path, mode='w', samplerate=samplerate, channels=channels, subtype='PCM_16') as f:
-        for idx, chunk in tqdm(enumerate(chunks), total=len(chunks), desc="Generating audio"):
+        # for idx, chunk in tqdm(enumerate(chunks), total=len(chunks), desc="Generating audio"):
+        for idx, chunk in enumerate(chunks):
             try:
                 sr, audio = generate_tts_audio(
                     chunk,
