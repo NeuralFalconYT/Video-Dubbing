@@ -1,3 +1,5 @@
+#%%writefile /content/chatterbox/src/chatterbox/tts_turbo.py
+#fix colab download
 import os
 import math
 from dataclasses import dataclass
@@ -11,7 +13,6 @@ import pyloudnorm as ln
 from safetensors.torch import load_file
 from huggingface_hub import snapshot_download
 from transformers import AutoTokenizer
-
 from .models.t3 import T3
 from .models.s3tokenizer import S3_SR
 from .models.s3gen import S3GEN_SR, S3Gen
@@ -21,6 +22,9 @@ from .models.t3.modules.cond_enc import T3Cond
 from .models.t3.modules.t3_config import T3Config
 from .models.s3gen.const import S3GEN_SIL
 import logging
+#colab fix
+from .hf_downloader import download_model
+
 logger = logging.getLogger(__name__)
 
 REPO_ID = "ResembleAI/chatterbox-turbo"
@@ -191,14 +195,17 @@ class ChatterboxTurboTTS:
             else:
                 print("MPS not available because the current MacOS version is not 12.3+ and/or you do not have an MPS-enabled device on this machine.")
             device = "cpu"
-
-        local_path = snapshot_download(
-            repo_id=REPO_ID,
-            token=os.getenv("HF_TOKEN") or True,
-            # Optional: Filter to download only what you need
-            allow_patterns=["*.safetensors", "*.json", "*.txt", "*.pt", "*.model"]
-        )
-
+        try:
+          local_path = snapshot_download(
+              repo_id=REPO_ID,
+              token=os.getenv("HF_TOKEN") or True,
+              # Optional: Filter to download only what you need
+              allow_patterns=["*.safetensors", "*.json", "*.txt", "*.pt", "*.model"]
+          )
+        except Exception as e:
+          print(e)
+          download_folder=f"{os.getcwd()}/chatterbox/"
+          local_path=download_model(REPO_ID,download_folder)
         return cls.from_local(local_path, device)
 
     def norm_loudness(self, wav, sr, target_lufs=-27):
