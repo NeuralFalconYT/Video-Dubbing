@@ -12,7 +12,7 @@ import random
 import numpy as np
 import torch
 from chatterbox.tts_turbo import ChatterboxTurboTTS
-
+from tts import unload_multilingual_model
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 MODEL = None
 def get_or_load_model():
@@ -31,6 +31,20 @@ def get_or_load_model():
             raise
     return MODEL
 
+import gc
+
+def unload_turbo_model():
+    global MODEL
+    if MODEL is not None:
+        print("🧹 Unloading Turbo model...")
+        del MODEL
+        MODEL = None
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+
+        print("✅ Turbo model fully unloaded")
 
 
 # MODEL = ChatterboxTurboTTS.from_pretrained("cuda" )
@@ -222,9 +236,11 @@ def generate(
     remove_silence=False,
     output_format="wav",
     minimum_silence=0.05,  
-    mp3_bitrate="192k" 
-):  
-
+    mp3_bitrate="192k",
+    low_gpu=True
+):   
+    if low_gpu:
+      unload_multilingual_model()
     minimum_silence = int(minimum_silence * 1000)
     turbo_model = get_or_load_model() 
     assert output_format in ["wav", "mp3"], "output_format must be 'wav' or 'mp3'"
