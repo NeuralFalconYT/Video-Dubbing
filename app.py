@@ -1,6 +1,7 @@
 # https://github.com/NeuralFalconYT
 import gradio as gr
 from tts_webui import tts_ui
+from turbo_tts_webui import turbo_tts_ui
 from whisper_diarization_webui import transcript_ui
 from dubbing_webui import dubbing_ui
 import logging, warnings
@@ -15,10 +16,11 @@ import click
 @click.option("--share", is_flag=True, default=False, help="Enable sharing of the interface.")
 def run_demo(share,debug):
     demo1=tts_ui()
-    demo2=transcript_ui()
-    demo3=dubbing_ui()
+    demo2=turbo_tts_ui()
+    demo3=transcript_ui()
+    demo4=dubbing_ui()
     custom_css = """.gradio-container { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; }"""
-    interface = gr.TabbedInterface([demo1, demo2,demo3],["ChatterBox TTS","Whisper Transcription","Dubbing"],title="",theme=gr.themes.Soft(),css=custom_css)
+    interface = gr.TabbedInterface([demo1, demo2,demo3,demo4],["Chatterbox Multilingual TTS","Chatterbox Turbo TTS","Whisper Transcription","Dubbing"],title="",theme=gr.themes.Soft(),css=custom_css)
     interface.queue(max_size=10).launch(share=share,debug=debug)
 if __name__ == "__main__":
     run_demo()
