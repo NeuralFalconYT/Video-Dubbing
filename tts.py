@@ -467,7 +467,6 @@ def remove_noise_high_quality(audio_path,
 #                                         max_gap=0.9 ,
 #                                         natural_pause= 0.2)
 # cleaned_file
-from turbo_tts import unload_turbo_model
 def clone_voice_streaming(
     text,
     audio_prompt_path_input,
@@ -479,10 +478,9 @@ def clone_voice_streaming(
     stereo=False,
     remove_silence=False,
     remove_noise=True,
-    low_gpu=True
+    
 ):  
-    if low_gpu:
-      unload_turbo_model()
+    
     if not os.path.exists(audio_prompt_path_input):
       print("⚠️ Reference Audio File Not Found")
       print(audio_prompt_path_input)
