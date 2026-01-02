@@ -129,7 +129,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
 def start_dubbing_ui(
     media_file, language_name, have_music, want_subtitle, llm_result_text,
     exaggeration, cfg_weight, temp,need_video,recover_audio,redub,
-    dubbing_json_state, speaker_voice_state,
+    dubbing_json_state, speaker_voice_state,voice_model,
     *speaker_audios
 ):
     if not dubbing_json_state or not speaker_voice_state:
@@ -179,6 +179,7 @@ def start_dubbing_ui(
         cfgw_input=cfg_weight,
         want_subtile=want_subtitle,
         redub=redub,
+        voice_model=voice_model,
     )
 
     dubbed_audio_with_music=None
@@ -240,6 +241,12 @@ def dubbing_ui():
                   exaggeration = gr.Slider(0.25, 2, step=.05, label="Exaggeration", value=.5)
                   cfg_weight = gr.Slider(0.2, 1, step=.05, label="CFG/Pace", value=0.5)
                   temp = gr.Slider(0.05, 5, step=.05, label="Temperature", value=.8)
+              with gr.Accordion("Voice Clone Model", open=False):
+                voice_model = gr.Radio(
+                        choices=["Chatterbox Multilingual", "Chatterbox Turbo"],
+                        value="Chatterbox Multilingual",
+                        label="Choose Voice Clone Model",
+                    )
               with gr.Accordion("Video Maker", open=True):
                   recover_audio=gr.Checkbox(value=True, label="🎧 Restore background music and ambience ?")
                   need_video=gr.Checkbox(value=True, label="🎬 Make Video ?")
@@ -288,7 +295,7 @@ def dubbing_ui():
           inputs=[
               media_file, language_name, have_music, want_subtitle, llm_result,
               exaggeration, cfg_weight, temp,need_video,recover_audio,redub,
-              dubbing_json_state, speaker_voice_state,
+              dubbing_json_state, speaker_voice_state,voice_model
               *speaker_audios
           ],
           outputs=[
