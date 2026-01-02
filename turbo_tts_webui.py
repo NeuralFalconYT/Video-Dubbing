@@ -2,6 +2,7 @@
 from turbo_tts import generate
 from STT.subtitle import subtitle_maker
 import gradio as gr
+from tts import unload_multilingual_model
 
 
 def gradio_turbo_tts( text,
@@ -17,7 +18,10 @@ def gradio_turbo_tts( text,
     output_format="wav",
     minimum_silence=0.05,  
     subtitle=False,
-    mp3_bitrate="192k" ):
+    mp3_bitrate="192k",
+    low_gpu=True):
+  if low_gpu:
+      unload_multilingual_model()
   audio_path,_=generate(
                 text,
                 audio_prompt_path,
