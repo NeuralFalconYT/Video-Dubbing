@@ -3,6 +3,8 @@
 # %%writefile /content/Video-Dubbing/tts_webui.py
 from tts import clone_voice_streaming,supported_languages
 from STT.subtitle import subtitle_maker
+from turbo_tts import unload_turbo_model
+
 def tts_only(
               text,
               audio_prompt_path_input,
@@ -14,7 +16,10 @@ def tts_only(
               remove_silence=False,
               subtitle=False,
               stereo=False,
+              low_gpu=True
           ):
+  if low_gpu:
+    unload_turbo_model()
   audio_path=clone_voice_streaming(
       text,
       audio_prompt_path_input,
