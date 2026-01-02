@@ -121,7 +121,34 @@ def prepare_redub_data_and_get_prompt(json_path, language="target language", thr
 def make_silence(duration_sec, path):
     """Generate silent audio of given duration (sec)"""
     AudioSegment.silent(duration=duration_sec * 1000).export(path, format="wav")
+from turbo_tts import unload_turbo_model
+from tts import unload_multilingual_model
+from turbo_tts import generate
 
+
+def call_turbo_tts(text,audio_prompt_path,seed_num):
+  temperature=0.8
+  min_p=0.00
+  top_p=0.95
+  top_k=1000
+  repetition_penalty=1.2
+  norm_loudness=True
+  audio_path,_=generate(
+              text,
+              audio_prompt_path,
+              temperature,
+              seed_num,
+              min_p,
+              top_p,
+              top_k,
+              repetition_penalty,
+              norm_loudness,
+              remove_silence=False,
+              output_format="wav",
+              minimum_silence=0.05,  
+              mp3_bitrate="192k",
+          ) 
+  return audio_path
 def srt_to_dub(
     media_file,
     dubbing_json,
@@ -131,7 +158,16 @@ def srt_to_dub(
     temperature_input=0.8,
     cfgw_input=0.5,
     redub=False,
+    voice_model="Chatterbox Multilingual"
 ):
+    if voice_model=="Chatterbox Multilingual":
+      unload_turbo_model()
+    else:
+      unload_multilingual_model()
+
+    if voice_model=="Chatterbox Turbo" and language_name!="English":
+      voice_model="Chatterbox Multilingual"
+
 
 
     
@@ -212,20 +248,23 @@ def srt_to_dub(
         # print(f"temperature_input: {temperature_input}")
         # print(f"seed_num_input: {seed_num_input}")
         # print(f"cfgw_input: {cfgw_input}")
-             
+            
         if redub==True and redub_tts==True:
             try:
-              raw_path = clone_voice_streaming(
-                          text,
-                          reference_audio,
-                          language_name,
-                          exaggeration_input,
-                          temperature_input,
-                          seed_num_input,
-                          cfgw_input,
-                          stereo=False,
-                          remove_silence=False,
-                      )
+              if voice_model=="Chatterbox Multilingual":
+                raw_path = clone_voice_streaming(
+                            text,
+                            reference_audio,
+                            language_name,
+                            exaggeration_input,
+                            temperature_input,
+                            seed_num_input,
+                            cfgw_input,
+                            stereo=False,
+                            remove_silence=False,
+                        )
+              else:
+                  raw_path=call_turbo_tts(text,reference_audio,seed_num_input)
             except Exception as e:
               print(f"Audio Generation Failed")
               preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
@@ -235,17 +274,21 @@ def srt_to_dub(
             raw_path=old_json["segments"][segment_id]['tts_path']
         if redub==False:   
             try:
-              raw_path = clone_voice_streaming(
-                          text,
-                          reference_audio,
-                          language_name,
-                          exaggeration_input,
-                          temperature_input,
-                          seed_num_input,
-                          cfgw_input,
-                          stereo=False,
-                          remove_silence=False,
-                      )
+              if voice_model=="Chatterbox Multilingual":
+                raw_path = clone_voice_streaming(
+                            text,
+                            reference_audio,
+                            language_name,
+                            exaggeration_input,
+                            temperature_input,
+                            seed_num_input,
+                            cfgw_input,
+                            stereo=False,
+                            remove_silence=False,
+                        )
+              else:
+                raw_path=call_turbo_tts(text,reference_audio,seed_num_input)
+
             except Exception as e:
               print(f"Audio Generation Failed")
               preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
@@ -340,7 +383,8 @@ def dubbing(
     temperature_input=0.8,
     cfgw_input=0.5,
     want_subtile=False,
-    redub=False
+    redub=False,
+    voice_model="Chatterbox Multilingual"
 ):    
     # curr_dir=os.getcwd()
     # json_path = os.path.join(curr_dir, "json_input.json")
@@ -356,6 +400,7 @@ def dubbing(
         temperature_input,
         cfgw_input,
         redub,
+        voice_model
 
     )
     save_path=audio_sync(json_path)
