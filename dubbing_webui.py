@@ -295,7 +295,7 @@ def dubbing_ui():
           inputs=[
               media_file, language_name, have_music, want_subtitle, llm_result,
               exaggeration, cfg_weight, temp,need_video,recover_audio,redub,
-              dubbing_json_state, speaker_voice_state,voice_model
+              dubbing_json_state, speaker_voice_state,voice_model,
               *speaker_audios
           ],
           outputs=[
