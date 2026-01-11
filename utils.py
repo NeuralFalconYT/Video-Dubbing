@@ -682,7 +682,7 @@ def restore_music(media_file, tts_dub_path):
     mixed.export(new_tts_dub_music, format="wav")
 
     print(f"✅ Final dubbed track saved as: {new_tts_dub_music}")
-    return new_tts_dub_music
+    return new_tts_dub_music,background_path
 
 # from utils import restore_music
 # final_path = restore_music(media_file, tts_dub_path)
