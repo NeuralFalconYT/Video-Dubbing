@@ -184,8 +184,9 @@ def start_dubbing_ui(
 
     dubbed_audio_with_music=None
     if recover_audio:
-        dubbed_audio_with_music = restore_music(media_file, dubbed_audio_path)
-
+        dubbed_audio_with_music,background_audio = restore_music(media_file, dubbed_audio_path)
+    else:
+      background_audio=None
     video_path=None
     if need_video:
       if recover_audio and dubbed_audio_with_music:
@@ -198,7 +199,7 @@ def start_dubbing_ui(
         folder_name=folder_name[:20]
         new_folder=f"{drive_folder}/{folder_name}/"
         os.makedirs(new_folder, exist_ok=True)
-        for i in [dubbed_audio_path,dubbed_audio_with_music,returned_custom_srt,video_path,returned_default_srt,returned_word_srt,returned_shorts_srt]:
+        for i in [dubbed_audio_path,dubbed_audio_with_music,background_audio,returned_custom_srt,video_path,returned_default_srt,returned_word_srt,returned_shorts_srt]:
             try:
                 shutil.copy(i,new_folder)
             except Exception as e:
@@ -215,6 +216,7 @@ def start_dubbing_ui(
         returned_shorts_srt,
         dubbed_audio_file,
         dubbed_audio_with_music,
+        background_audio,
         video_path,
         redubbing_prompt
     )
@@ -278,6 +280,7 @@ def dubbing_ui():
               with gr.Accordion("📦Download Audio & Video File [For colab]", open=False):
                   output_audio_file = gr.File(label="🎵 Download Dubbed Audio")
                   output_audio_music_file= gr.File(label="🎶 Download Dubbed Voice + Restored Background & Ambience")
+                  background_noise= gr.File(label="🎶 Download Background Music or Ambience")
                   video_path = gr.File(label="🎞️ Download Video")
               with gr.Accordion("✍️ Redub Prompt (TTS too long)", open=False):
                   redub_prompt=gr.Textbox(
@@ -308,6 +311,7 @@ def dubbing_ui():
               shorts_srt,
               output_audio_file,
               output_audio_music_file,
+              background_noise,
               video_path,
               redub_prompt
           ]
