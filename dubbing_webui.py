@@ -245,7 +245,7 @@ def dubbing_ui():
                   temp = gr.Slider(0.05, 5, step=.05, label="Temperature", value=.8)
               with gr.Accordion("Voice Clone Model", open=False):
                 voice_model = gr.Radio(
-                        choices=["Chatterbox Multilingual", "Chatterbox Turbo"],
+                        choices=["Chatterbox Multilingual", "Chatterbox Turbo","Kokoro"],
                         value="Chatterbox Multilingual",
                         label="Choose Voice Clone Model",
                     )
