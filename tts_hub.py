@@ -1,3 +1,5 @@
+from kokoro import KPipeline
+import soundfile as sf
 kokoro_pipeline=None
 import re 
 import uuid 
