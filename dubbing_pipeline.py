@@ -12,7 +12,7 @@ import uuid
 import shutil
 from audio_sync_pipeline import audio_sync
 from tqdm.auto import tqdm
-
+from tts_hub import run_kokoro_tts
 
 
 
@@ -263,8 +263,10 @@ def srt_to_dub(
                             stereo=False,
                             remove_silence=False,
                         )
-              else:
+              if voice_model=="Chatterbox Turbo":
                   raw_path=call_turbo_tts(text,reference_audio,seed_num_input)
+              else:
+                  raw_path=run_kokoro_tts(text,language=language_name,voice='af_heart',speed=1.0)
             except Exception as e:
               print(f"Audio Generation Failed")
               preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
@@ -286,8 +288,10 @@ def srt_to_dub(
                             stereo=False,
                             remove_silence=False,
                         )
-              else:
+              if voice_model=="Chatterbox Turbo":
                 raw_path=call_turbo_tts(text,reference_audio,seed_num_input)
+              else:
+                raw_path=run_kokoro_tts(text,language=language_name,voice='af_heart',speed=1.0)
 
             except Exception as e:
               print(f"Audio Generation Failed")
