@@ -27,3 +27,7 @@ gradio>=5.9.1
 #audio-separator[gpu]==0.38.0
 demucs==4.0.1
 pyloudnorm==0.1.1
+kokoro>=0.9.4
+misaki[zh]
+misaki[ja]
+librosa>=0.11.0
