@@ -263,7 +263,7 @@ def srt_to_dub(
                             stereo=False,
                             remove_silence=False,
                         )
-              if voice_model=="Chatterbox Turbo":
+              elif voice_model=="Chatterbox Turbo":
                   raw_path=call_turbo_tts(text,reference_audio,seed_num_input)
               else:
                   raw_path=run_kokoro_tts(text,language=language_name,voice='af_heart',speed=1.0)
@@ -288,7 +288,7 @@ def srt_to_dub(
                             stereo=False,
                             remove_silence=False,
                         )
-              if voice_model=="Chatterbox Turbo":
+              elif voice_model=="Chatterbox Turbo":
                 raw_path=call_turbo_tts(text,reference_audio,seed_num_input)
               else:
                 raw_path=run_kokoro_tts(text,language=language_name,voice='af_heart',speed=1.0)
