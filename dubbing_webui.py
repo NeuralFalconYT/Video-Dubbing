@@ -1,5 +1,6 @@
 # %cd /content/Video-Dubbing/
-
+#@title /content/Video-Dubbing/dubbing_webui.py
+# %%writefile /content/Video-Dubbing/dubbing_webui.py
 import gradio as gr
 import json
 import os
@@ -18,7 +19,7 @@ def make_json_for_redub(json_path,redub_input):
       data = json.load(f)
   redub_json={}
   for i in data['segments']:
-    
+
     temp_data=data['segments'][i]
     redub=False
     dubbing_text=temp_data['dubbing']
@@ -35,7 +36,7 @@ def make_json_for_redub(json_path,redub_input):
       "redub":redub,
       "duration": temp_data['actual_duration'],
       "starting_silence": temp_data['starting_silence'],
-      
+
     }
   return redub_json
 # --- FINAL, IMPROVED FUNCTION with Progress Bar and Disabled Inputs ---
@@ -57,7 +58,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
             if os.path.exists(json_path):
                 redub_input=json.loads(llm_result_text)
                 dubbing_json=make_json_for_redub(json_path,redub_input)
-                dubbing_json=llm_data    
+                dubbing_json=llm_data
         speaker_ids = sorted(list(set(int(item["speaker_id"]) for item in dubbing_json.values())))
     except (json.JSONDecodeError, KeyError, TypeError) as e:
         raise gr.Error(f"Invalid JSON format or structure: {e}")
@@ -65,7 +66,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
     initial_updates = []
     initial_speaker_voice_state = {sid: {} for sid in speaker_ids}
 
-    display_id=1  
+    display_id=1
     for i in range(MAX_SPEAKERS):
         if i in speaker_ids:
             # Make component visible BUT NOT INTERACTIVE
@@ -93,8 +94,8 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
     if redub and os.path.exists(json_path):
         with open(json_path, "r", encoding="utf-8") as f:
           data = json.load(f)
-        speaker_voice=data['speaker_voice'] 
-    else:  
+        speaker_voice=data['speaker_voice']
+    else:
       speaker_voice = get_speakers(media_file, have_music, llm_data)
     speaker_voice = {int(k): v for k, v in speaker_voice.items()}
     progress(1, desc="Extraction Complete!")
@@ -127,8 +128,8 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
 
 # --- FIXED FUNCTION ---
 def start_dubbing_ui(
-    media_file, language_name, have_music, want_subtitle, llm_result_text,
-    exaggeration, cfg_weight, temp,need_video,recover_audio,redub,
+    media_file, language_name, have_music, want_subtitle, llm_result_text
+    ,need_video,recover_audio,redub,
     dubbing_json_state, speaker_voice_state,voice_model,
     *speaker_audios
 ):
@@ -174,9 +175,6 @@ def start_dubbing_ui(
         dubbing_json=dubbing_json_state,
         speaker_voice=updated_speaker_voice,
         language_name=language_name,
-        exaggeration_input=exaggeration,
-        temperature_input=temp,
-        cfgw_input=cfg_weight,
         want_subtile=want_subtitle,
         redub=redub,
         voice_model=voice_model,
@@ -205,7 +203,7 @@ def start_dubbing_ui(
             except Exception as e:
                 print(e)
                 pass
-        
+
     return (
         dubbed_audio_path,
         dubbed_audio_with_music,
@@ -239,13 +237,13 @@ def dubbing_ui():
               llm_result = gr.Textbox(label="Paste LLM Translation", max_lines=10)
               generate_speaker_btn = gr.Button("🚀 Step 1: Extract Speakers [Wait for a minutes]", variant="primary")
 
-              with gr.Accordion("Advanced TTS Options", open=False):
-                  exaggeration = gr.Slider(0.25, 2, step=.05, label="Exaggeration", value=.5)
-                  cfg_weight = gr.Slider(0.2, 1, step=.05, label="CFG/Pace", value=0.5)
-                  temp = gr.Slider(0.05, 5, step=.05, label="Temperature", value=.8)
+              # with gr.Accordion("Advanced TTS Options", open=False):
+              #     exaggeration = gr.Slider(0.25, 2, step=.05, label="Exaggeration", value=.5)
+              #     cfg_weight = gr.Slider(0.2, 1, step=.05, label="CFG/Pace", value=0.5)
+              #     temp = gr.Slider(0.05, 5, step=.05, label="Temperature", value=.8)
               with gr.Accordion("Voice Clone Model", open=False):
                 voice_model = gr.Radio(
-                        choices=["Chatterbox Multilingual", "Chatterbox Turbo","Kokoro"],
+                        choices=["Chatterbox Multilingual", "Chatterbox Turbo","Kokoro","Edge TTS"],
                         value="Chatterbox Multilingual",
                         label="Choose Voice Clone Model",
                     )
@@ -297,7 +295,7 @@ def dubbing_ui():
           fn=start_dubbing_ui,
           inputs=[
               media_file, language_name, have_music, want_subtitle, llm_result,
-              exaggeration, cfg_weight, temp,need_video,recover_audio,redub,
+              need_video,recover_audio,redub,
               dubbing_json_state, speaker_voice_state,voice_model,
               *speaker_audios
           ],
@@ -318,8 +316,8 @@ def dubbing_ui():
       )
   return demo
 
-  
+
 
 # from dubbing_webui import dubbing_ui
 # demo=dubbing_ui()
-# demo.launch(share=True, debug=True) 
+# demo.launch(share=True, debug=True)
