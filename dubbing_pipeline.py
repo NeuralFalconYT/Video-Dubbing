@@ -1,4 +1,5 @@
-# %cd /content/Video-Dubbing/
+#@title /content/Video-Dubbing/dubbing_pipeline.py
+# %%writefile /content/Video-Dubbing/dubbing_pipeline.py
 from utils import get_dubbing_json,get_speakers,get_media_duration,make_video
 from tts import clone_voice_streaming,supported_languages
 from STT.subtitle import subtitle_maker
@@ -12,8 +13,7 @@ import uuid
 import shutil
 from audio_sync_pipeline import audio_sync
 from tqdm.auto import tqdm
-from tts_hub import run_kokoro_tts
-
+# from tts_hub import run_kokoro_tts
 
 
 
@@ -121,45 +121,186 @@ def prepare_redub_data_and_get_prompt(json_path, language="target language", thr
 def make_silence(duration_sec, path):
     """Generate silent audio of given duration (sec)"""
     AudioSegment.silent(duration=duration_sec * 1000).export(path, format="wav")
-from turbo_tts import unload_turbo_model
-from tts import unload_multilingual_model
-from turbo_tts import generate
 
 
-def call_turbo_tts(text,audio_prompt_path,seed_num):
-  temperature=0.8
-  min_p=0.00
-  top_p=0.95
-  top_k=1000
-  repetition_penalty=1.2
-  norm_loudness=True
-  audio_path,_=generate(
-              text,
-              audio_prompt_path,
-              temperature,
-              seed_num,
-              min_p,
-              top_p,
-              top_k,
-              repetition_penalty,
-              norm_loudness,
-              remove_silence=False,
-              output_format="wav",
-              minimum_silence=0.05,  
-              mp3_bitrate="192k",
-          ) 
-  return audio_path
+
+
+import os
+import json
+import time
+import uuid
+import re
+
+import soundfile as sf
+from pydub import AudioSegment
+import torch,gc
+from turbo_tts import generate, unload_turbo_model
+from tts import clone_voice_streaming, unload_multilingual_model
+from kokoro import KPipeline
+from rich import print
+import shutil
+from edge_tts_code import edge_tts_generate
+
+
+# =========================
+# GLOBAL PIPELINES
+# =========================
+kokoro_pipeline = None
+
+
+# =========================
+# UTILITIES
+# =========================
+def clear_screen():
+    try:
+        from IPython.display import clear_output
+        clear_output(wait=True)
+    except:
+        import sys
+        sys.stdout.write("\033[2J\033[H")
+        sys.stdout.flush()
+
+
+def make_silence(duration_sec, path):
+    """Generate silent wav audio"""
+    AudioSegment.silent(duration=duration_sec * 1000).export(path, format="wav")
+
+
+def temp_tts_file_name(text, language="en"):
+    """Create safe temp wav filename"""
+    save_folder = "./kokoro_tts"
+    os.makedirs(save_folder, exist_ok=True)
+
+    text = re.sub(r"[^a-zA-Z\s]", "", text).lower().strip().replace(" ", "_")
+    if not text:
+        text = "audio"
+
+    truncated = text[:20]
+    random_str = uuid.uuid4().hex[:8].upper()
+
+    return f"{save_folder}/{truncated}_{language}_{random_str}.wav"
+
+
+# =========================
+# TURBO TTS
+# =========================
+def call_turbo_tts(text, audio_prompt_path, seed_num):
+    audio_path, _ = generate(
+        text=text,
+        audio_prompt_path=audio_prompt_path,
+        temperature=0.8,
+        seed=seed_num,
+        min_p=0.0,
+        top_p=0.95,
+        top_k=1000,
+        repetition_penalty=1.2,
+        norm_loudness=True,
+        remove_silence=False,
+        output_format="wav",
+        minimum_silence=0.05,
+        mp3_bitrate="192k",
+    )
+    return audio_path
+
+
+# =========================
+# KOKORO TTS
+# =========================
+def run_kokoro_tts(text, language="English", voice="af_heart", speed=1.0):
+    global kokoro_pipeline
+
+    language_map = {
+        "English": "a",
+        "American English": "a",
+        "British English": "b",
+        "Hindi": "h",
+        "Spanish": "e",
+        "French": "f",
+        "Italian": "i",
+        "Brazilian Portuguese": "p",
+        "Japanese": "j",
+        "Mandarin Chinese": "z",
+    }
+
+    lang_code = language_map.get(language, "a")
+    if language=="English":
+      voice="af_heart"
+    if language=="Hindi":
+      voice="hf_alpha"
+
+    if kokoro_pipeline is None:
+        kokoro_pipeline = KPipeline(lang_code=lang_code)
+
+    file_name = temp_tts_file_name(text, lang_code)
+
+    generator = kokoro_pipeline(text, voice=voice, speed=speed)
+    for _, _, audio in generator:
+        sf.write(file_name, audio, 24000)
+
+    return file_name
+
+
+
+def run_tts(text, reference_audio, language_name, seed_num, voice_model):
+    """
+    Central TTS router (safe version).
+    Returns None if generation fails.
+    """
+
+    try:
+        if voice_model == "Chatterbox Multilingual":
+            return clone_voice_streaming(
+                text,
+                reference_audio,
+                lang_name=language_name,
+                exaggeration_input=0.5,
+                temperature_input=0.8,
+                seed_num_input=seed_num,
+                cfgw_input=0.5,
+                stereo=False,
+                remove_silence=False,
+                remove_noise=True,
+            )
+
+        elif voice_model == "Chatterbox Turbo":
+            return call_turbo_tts(text, reference_audio, seed_num)
+
+        elif voice_model == "Kokoro":
+            return run_kokoro_tts(text, language=language_name)
+        elif voice_model == "Edge TTS":
+            return edge_tts_generate(
+                  text=text,
+                  language=language_name,
+                  gender="Female",
+                  speed=1.0,
+              )
+
+        # Future models here
+        # elif voice_model == "NewTTS":
+        #     return run_new_tts(...)
+
+    except Exception as e:
+        print(f"⚠️ TTS failed ({voice_model}): {e}")
+
+    return None
+
+
+
+
+
+
 def srt_to_dub(
     media_file,
     dubbing_json,
     speaker_voice,
     language_name="English",
-    exaggeration_input=0.5,
-    temperature_input=0.8,
-    cfgw_input=0.5,
+    # exaggeration_input=0.5,
+    # temperature_input=0.8,
+    # cfgw_input=0.5,
     redub=False,
     voice_model="Chatterbox Multilingual"
 ):
+    global kokoro_pipeline
     if voice_model=="Chatterbox Multilingual":
       unload_turbo_model()
     else:
@@ -170,20 +311,20 @@ def srt_to_dub(
 
 
 
-    
+
     #create folders
     temp_folder = "./dubbing_temp"
     if not redub:
         if os.path.exists(temp_folder):
             shutil.rmtree(temp_folder)
     os.makedirs(temp_folder, exist_ok=True)
-    
+
     dub_save_folder="./dubbing_result"
     os.makedirs(dub_save_folder, exist_ok=True)
-    
+
     curr_dir=os.getcwd()
     json_path = os.path.join(curr_dir, "json_input.json")
-    
+
     old_json={}
     if redub and os.path.exists(json_path):
         try:
@@ -191,8 +332,8 @@ def srt_to_dub(
                 old_json = json.load(f)
         except json.JSONDecodeError:
             old_json = {}
-        
-         
+
+
     #get media_duration for ending silence
     last_id = list(dubbing_json.keys())[-1]
     actual_media_duration = get_media_duration(media_file)
@@ -210,12 +351,20 @@ def srt_to_dub(
     dubbing_dict={ }
 
     # for i, segment_id in enumerate(dubbing_json, 1):
-    
-    for i, segment_id in enumerate(
-        tqdm(dubbing_json.keys(),
-             total=len(dubbing_json),
-             desc="Generating dubbed segments"),1):
-                 
+
+    # for i, segment_id in enumerate(
+    #     tqdm(dubbing_json.keys(),
+    #          total=len(dubbing_json),
+    #          desc="Generating dubbed segments"),1):
+    total_segments = len(dubbing_json)
+    for idx, segment_id in enumerate(dubbing_json.keys(), start=1):
+        clear_screen()
+
+        print(
+            f"[bold white]Generating TTS[/] "
+            f"[green]{idx}[/]/[cyan]{total_segments}[/]"
+        )
+
         seg = dubbing_json[segment_id]
         text = seg['text']
         start = seg['start']
@@ -233,7 +382,7 @@ def srt_to_dub(
         fixed_seed = spk_info.get("fixed_seed", 0)
         avg_speed = spk_info.get("avg_talk_speed", 1.0)
         seed_num_input=fixed_seed
-        
+
         if segment_id == last_id:
             ending_silence = max(0, media_duration - end)
         else:
@@ -241,71 +390,51 @@ def srt_to_dub(
             ending_silence = dubbing_json[next_id].get('starting_silence', 0)
 
         save_path = f"{temp_folder}/{segment_id}.wav"
-        # print(f"text: {text}")
-        # print(f"reference_audio Audio: {reference_audio}")
-        # print(f"Language_name: {language_name}")
-        # print(f"exaggeration_input: {exaggeration_input}")
-        # print(f"temperature_input: {temperature_input}")
-        # print(f"seed_num_input: {seed_num_input}")
-        # print(f"cfgw_input: {cfgw_input}")
-            
+
+        if voice_model == "Chatterbox Multilingual":
+            unload_turbo_model()
+
+        elif voice_model == "Chatterbox Turbo":
+            unload_multilingual_model()
+
+        elif voice_model == "Kokoro":
+            if kokoro_pipeline is not None:
+                del kokoro_pipeline
+                kokoro_pipeline = None
+
+            gc.collect()
+            if torch:
+                torch.cuda.empty_cache()
+        raw_path = None
         if redub==True and redub_tts==True:
-            try:
-              if voice_model=="Chatterbox Multilingual":
-                raw_path = clone_voice_streaming(
-                            text,
-                            reference_audio,
-                            language_name,
-                            exaggeration_input,
-                            temperature_input,
-                            seed_num_input,
-                            cfgw_input,
-                            stereo=False,
-                            remove_silence=False,
-                        )
-              elif voice_model=="Chatterbox Turbo":
-                  raw_path=call_turbo_tts(text,reference_audio,seed_num_input)
-              else:
-                  raw_path=run_kokoro_tts(text,language=language_name,voice='af_heart',speed=1.0)
-            except Exception as e:
-              print(f"Audio Generation Failed")
-              preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
-              print(preview)
-              make_silence(actual_duration, raw_path)
+            raw_path=run_tts(text, reference_audio, language_name, seed_num_input, voice_model)
+            # if raw_path is None:
+            #   make_silence(actual_duration, raw_path)
+            #   print(f"Audio Generation Failed")
+            #   preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
+            #   print(preview)
+
         if redub==True and redub_tts==False:
             raw_path=old_json["segments"][segment_id]['tts_path']
-        if redub==False:   
-            try:
-              if voice_model=="Chatterbox Multilingual":
-                raw_path = clone_voice_streaming(
-                            text,
-                            reference_audio,
-                            language_name,
-                            exaggeration_input,
-                            temperature_input,
-                            seed_num_input,
-                            cfgw_input,
-                            stereo=False,
-                            remove_silence=False,
-                        )
-              elif voice_model=="Chatterbox Turbo":
-                raw_path=call_turbo_tts(text,reference_audio,seed_num_input)
-              else:
-                raw_path=run_kokoro_tts(text,language=language_name,voice='af_heart',speed=1.0)
+        if redub==False:
+            raw_path=run_tts(text, reference_audio, language_name, seed_num_input, voice_model)
+            # if raw_path is None:
+            #   make_silence(actual_duration, raw_path)
+            #   print(f"Audio Generation Failed")
+            #   preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
+            #   print(preview)
 
-            except Exception as e:
-              print(f"Audio Generation Failed")
-              preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
-              print(preview)
-              make_silence(actual_duration, raw_path)
-
-                 
-        if os.path.exists(raw_path):
-            if not os.path.exists(save_path):
-                shutil.copy(raw_path,save_path)
-        else:
+        if raw_path is None:
             make_silence(actual_duration, save_path)
-            
+        else:
+            if os.path.exists(raw_path):
+                shutil.copy(raw_path,save_path)
+        # if os.path.exists(raw_path):
+        #     if not os.path.exists(save_path):
+        #         shutil.copy(raw_path,save_path)
+        # else:
+        #     make_silence(actual_duration, save_path)
+
         tts_duration=get_duration(path=save_path) if os.path.exists(save_path) else 0.0
         gap=tts_duration-actual_duration
         if gap>0:
@@ -326,10 +455,10 @@ def srt_to_dub(
             'tts_path':  os.path.abspath(save_path),
             'tts_duration': tts_duration ,
             'language': language_name,
-            'exaggeration': exaggeration_input,
-            'temperature': temperature_input,
+            # 'exaggeration': exaggeration_input,
+            # 'temperature': temperature_input,
             'seed_num': seed_num_input,
-            'cfgw': cfgw_input,
+            # 'cfgw': cfgw_input,
             'reference_audio': reference_audio,
         }
     json_result["segments"]=dubbing_dict
@@ -337,7 +466,24 @@ def srt_to_dub(
       json.dump(json_result, f, ensure_ascii=False, indent=4)
 
     redubbing_prompt=prepare_redub_data_and_get_prompt(json_path, language=language_name, threshold=0.9)
-    
+    # =========================
+    # Post-clean models
+    # =========================
+    if voice_model == "Chatterbox Multilingual":
+        unload_multilingual_model()
+
+    elif voice_model == "Chatterbox Turbo":
+        unload_turbo_model()
+
+    elif voice_model == "Kokoro":
+        if kokoro_pipeline is not None:
+            del kokoro_pipeline
+            kokoro_pipeline = None
+
+        gc.collect()
+        if torch:
+            torch.cuda.empty_cache()
+
     return json_result,json_path,redubbing_prompt
 
 
@@ -349,7 +495,7 @@ def srt_to_dub(
 #   redub_input=json.loads(redub_json_string)
 #   redub_json={}
 #   for i in data['segments']:
-    
+
 #     temp_data=data['segments'][i]
 #     redub=False
 #     dubbing_text=temp_data['dubbing']
@@ -366,7 +512,7 @@ def srt_to_dub(
 #       "redub":redub,
 #       "duration": temp_data['actual_duration'],
 #       "starting_silence": temp_data['starting_silence'],
-      
+
 #     }
 #   return redub_json
 
@@ -383,13 +529,13 @@ def dubbing(
     dubbing_json,
     speaker_voice,
     language_name="English",
-    exaggeration_input=0.5,
-    temperature_input=0.8,
-    cfgw_input=0.5,
+    # exaggeration_input=0.5,
+    # temperature_input=0.8,
+    # cfgw_input=0.5,
     want_subtile=False,
     redub=False,
     voice_model="Chatterbox Multilingual"
-):    
+):
     # curr_dir=os.getcwd()
     # json_path = os.path.join(curr_dir, "json_input.json")
     # if redub and os.path.exists(json_path):
@@ -400,9 +546,9 @@ def dubbing(
         dubbing_json,
         speaker_voice,
         language_name,
-        exaggeration_input,
-        temperature_input,
-        cfgw_input,
+        # exaggeration_input,
+        # temperature_input,
+        # cfgw_input,
         redub,
         voice_model
 
