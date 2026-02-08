@@ -137,7 +137,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub,language_n
 
 import os
 import zipfile
-
+import uuid
 
 def create_zip_from_video(
     video_path,
@@ -155,7 +155,8 @@ def create_zip_from_video(
 
     # ---- zip filename from video ----
     base_name = os.path.splitext(os.path.basename(video_path))[0]
-    zip_path = os.path.join(zip_folder, f"{base_name}.zip")
+    unique_id=str(uuid.uuid4().hex[:6].upper())
+    zip_path = os.path.join(zip_folder, f"{base_name}_{unique_id}.zip")
 
     # ---- files to include ----
     files = [
