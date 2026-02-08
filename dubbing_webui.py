@@ -59,17 +59,6 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub,language_n
                 dubbing_json=make_json_for_redub(json_path,redub_input)
                 dubbing_json=llm_data
         speaker_ids = sorted(list(set(int(item["speaker_id"]) for item in dubbing_json.values())))
-
-        #load default voice avoid upload each time 
-        if language_name == "Hindi" and len(speaker_ids) == 1:
-          src_voice = "./assets/voice/hindi/male/bobby_male_hindi.wav"
-          dst_dir = "./speaker_voice"
-          dst_voice = os.path.join(dst_dir, "0.wav")
-          if os.path.exists(src_voice):
-              os.makedirs(dst_dir, exist_ok=True)
-              if os.path.exists(dst_voice):
-                  os.remove(dst_voice)
-              shutil.copy(src_voice, dst_voice)
             
     except (json.JSONDecodeError, KeyError, TypeError) as e:
         raise gr.Error(f"Invalid JSON format or structure: {e}")
@@ -111,7 +100,15 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub,language_n
     speaker_voice = {int(k): v for k, v in speaker_voice.items()}
     progress(1, desc="Extraction Complete!")
 
-
+    if language_name == "Hindi" and len(MAX_SPEAKERS) == 1:
+        src_voice = "./assets/voice/hindi/male/bobby_male_hindi.wav"
+        dst_dir = "./speaker_voice"
+        dst_voice = os.path.join(dst_dir, "0.wav")
+        if os.path.exists(src_voice):
+            os.makedirs(dst_dir, exist_ok=True)
+            if os.path.exists(dst_voice):
+                os.remove(dst_voice)
+            shutil.copy(src_voice, dst_voice)
     # --- Stage 3: Final UI update with results ---
     final_updates = []
     for i in range(MAX_SPEAKERS):
@@ -128,6 +125,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub,language_n
             )
         else:
             final_updates.append(gr.update()) # No change
+            #load default voice avoid upload each time 
 
     # YIELD the final update: populate the audio components and show the final message
     final_summary = f"✅ Detected {len(speaker_voice)} speaker(s). You can replace their voices below."
