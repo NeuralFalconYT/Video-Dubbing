@@ -41,12 +41,11 @@ def make_json_for_redub(json_path,redub_input):
   return redub_json
 # --- FINAL, IMPROVED FUNCTION with Progress Bar and Disabled Inputs ---
 
-def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=gr.Progress()):
+def extract_speakers_ui(media_file, have_music, llm_result_text,redub,language_name, progress=gr.Progress()):
     if not media_file or not os.path.exists(media_file):
         raise gr.Error("Please provide a valid media file path.")
     if not llm_result_text:
         raise gr.Error("Please paste the translation JSON to extract speakers.")
-
     # --- Stage 1: Fast initial processing and first UI update ---
     llm_data = json.loads(llm_result_text)
     dubbing_json = get_dubbing_json(llm_data)
@@ -60,6 +59,18 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
                 dubbing_json=make_json_for_redub(json_path,redub_input)
                 dubbing_json=llm_data
         speaker_ids = sorted(list(set(int(item["speaker_id"]) for item in dubbing_json.values())))
+
+        #load default voice avoid upload each time 
+        if language_name == "Hindi" and len(speaker_ids) == 1:
+          src_voice = "./assets/voice/hindi/male/bobby_male_hindi.wav"
+          dst_dir = "./speaker_voice"
+          dst_voice = os.path.join(dst_dir, "0.wav")
+          if os.path.exists(src_voice):
+              os.makedirs(dst_dir, exist_ok=True)
+              if os.path.exists(dst_voice):
+                  os.remove(dst_voice)
+              shutil.copy(src_voice, dst_voice)
+            
     except (json.JSONDecodeError, KeyError, TypeError) as e:
         raise gr.Error(f"Invalid JSON format or structure: {e}")
 
@@ -342,7 +353,7 @@ def dubbing_ui():
 
       generate_speaker_btn.click(
           fn=extract_speakers_ui,
-          inputs=[media_file, have_music, llm_result,redub],
+          inputs=[media_file, have_music, llm_result,redub,language_name],
           outputs=[dubbing_json_state, speaker_voice_state, speaker_summary, *speaker_audios]
       )
 
