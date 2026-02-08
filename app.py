@@ -5,6 +5,8 @@ from tts_webui import tts_ui
 from turbo_tts_webui import turbo_tts_ui
 from whisper_diarization_webui import transcript_ui
 from dubbing_webui import dubbing_ui
+from subtitle_romanize_ui import romanize
+
 import logging, warnings
 logging.disable(logging.CRITICAL)
 warnings.filterwarnings("ignore")
@@ -54,7 +56,8 @@ def run_demo(share,debug):
     demo2=turbo_tts_ui()
     demo3=transcript_ui()
     demo4=dubbing_ui()
-    interface = gr.TabbedInterface([demo1, demo2,demo3,demo4],["Chatterbox Multilingual TTS","Chatterbox Turbo TTS","Whisper Transcription","Dubbing"],title="",theme=gr.themes.Soft(),css=custom_css)
+    demo5=romanize()
+    interface = gr.TabbedInterface([demo1, demo2,demo3,demo4,demo5],["Chatterbox Multilingual TTS","Chatterbox Turbo TTS","Whisper Transcription","Dubbing","Subtitle Romanize"],title="",theme=gr.themes.Soft(),css=custom_css)
     interface.queue(max_size=10).launch(share=share,debug=debug)
 if __name__ == "__main__":
     run_demo()
