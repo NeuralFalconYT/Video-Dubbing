@@ -124,6 +124,47 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub, progress=
 
 
 
+import os
+import zipfile
+
+
+def create_zip_from_video(
+    video_path,
+    dubbed_audio_path=None,
+    dubbed_audio_with_music=None,
+    background_audio=None,
+    returned_custom_srt=None,
+    returned_default_srt=None,
+    returned_word_srt=None,
+    returned_shorts_srt=None,
+):
+    # ---- create store_zip folder ----
+    zip_folder = "./store_zip"
+    os.makedirs(zip_folder, exist_ok=True)
+
+    # ---- zip filename from video ----
+    base_name = os.path.splitext(os.path.basename(video_path))[0]
+    zip_path = os.path.join(zip_folder, f"{base_name}.zip")
+
+    # ---- files to include ----
+    files = [
+        dubbed_audio_path,
+        dubbed_audio_with_music,
+        background_audio,
+        returned_custom_srt,
+        video_path,
+        returned_default_srt,
+        returned_word_srt,
+        returned_shorts_srt,
+    ]
+
+    # ---- create zip ----
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+        for f in files:
+            if f and os.path.exists(f):
+                z.write(f, os.path.basename(f))
+
+    return zip_path
 
 
 # --- FIXED FUNCTION ---
@@ -191,13 +232,25 @@ def start_dubbing_ui(
         video_path=make_video(media_file,dubbed_audio_with_music,language_name)
       else:
         video_path=make_video(media_file,dubbed_audio_path,language_name)
+
+
+    zip_file_path=create_zip_from_video(
+    video_path,
+    dubbed_audio_path,
+    dubbed_audio_with_music,
+    background_audio,
+    returned_custom_srt,
+    returned_default_srt,
+    returned_word_srt,
+    returned_shorts_srt)
     drive_folder="/content/gdrive/MyDrive/Video_Dubbing"
     if os.path.exists(drive_folder):
         folder_name=os.path.splitext(os.path.basename(dubbed_audio_path))[0]
         folder_name=folder_name[:20]
         new_folder=f"{drive_folder}/{folder_name}/"
         os.makedirs(new_folder, exist_ok=True)
-        for i in [dubbed_audio_path,dubbed_audio_with_music,background_audio,returned_custom_srt,video_path,returned_default_srt,returned_word_srt,returned_shorts_srt]:
+        # for i in [dubbed_audio_path,dubbed_audio_with_music,background_audio,returned_custom_srt,video_path,returned_default_srt,returned_word_srt,returned_shorts_srt,zip_file_path]:
+        for i in [zip_file_path]:
             try:
                 shutil.copy(i,new_folder)
             except Exception as e:
@@ -205,6 +258,7 @@ def start_dubbing_ui(
                 pass
 
     return (
+        zip_file_path,
         dubbed_audio_path,
         dubbed_audio_with_music,
         returned_custom_srt,
@@ -266,6 +320,7 @@ def dubbing_ui():
               dubbing_btn = gr.Button("🎬 Step 2: Start Dubbing", variant="primary")
 
               gr.Markdown("### 🎉 Outputs")
+              download_zip = gr.File(label="🎞️ Download ZIP File")
               output_audio = gr.Audio(interactive=False, label="🎧 Dubbed Audio Output", autoplay=False)
               output_audio_music = gr.Audio(interactive=False, label="🎵 Dubbed Voice + Restored Background & Ambience", autoplay=False)
               custom_level_srt = gr.File(label="🗂️ Multi line srt")
@@ -300,6 +355,7 @@ def dubbing_ui():
               *speaker_audios
           ],
           outputs=[
+              download_zip,
               output_audio,
               output_audio_music,
               custom_level_srt,
