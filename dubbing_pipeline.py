@@ -405,36 +405,31 @@ def srt_to_dub(
             gc.collect()
             if torch:
                 torch.cuda.empty_cache()
+
+
         raw_path = None
-        if redub==True and redub_tts==True:
-            raw_path=run_tts(text, reference_audio, language_name, seed_num_input, voice_model)
-            # if raw_path is None:
-            #   make_silence(actual_duration, raw_path)
-            #   print(f"Audio Generation Failed")
-            #   preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
-            #   print(preview)
 
-        if redub==True and redub_tts==False:
-            raw_path=old_json["segments"][segment_id]['tts_path']
-        if redub==False:
-            raw_path=run_tts(text, reference_audio, language_name, seed_num_input, voice_model)
-            # if raw_path is None:
-            #   make_silence(actual_duration, raw_path)
-            #   print(f"Audio Generation Failed")
-            #   preview = (text[:25] + "...") if text and len(text) > 25 else (text or "[EMPTY TEXT]")
-            #   print(preview)
-
+        if redub and redub_tts:
+            raw_path = run_tts(text, reference_audio, language_name, seed_num_input, voice_model)
+        
+        elif redub and not redub_tts:
+            raw_path = old_json["segments"][segment_id]['tts_path']
+        
+        else:
+            raw_path = run_tts(text, reference_audio, language_name, seed_num_input, voice_model)
+        
         if raw_path is None:
             make_silence(actual_duration, save_path)
-        else:
-            if os.path.exists(raw_path):
-                shutil.copy(raw_path,save_path)
-        # if os.path.exists(raw_path):
-        #     if not os.path.exists(save_path):
-        #         shutil.copy(raw_path,save_path)
-        # else:
-        #     make_silence(actual_duration, save_path)
+        
+        elif os.path.exists(raw_path):
+            raw_abs = os.path.abspath(raw_path)
+            save_abs = os.path.abspath(save_path)
+        
+            if raw_abs != save_abs:
+                shutil.copy(raw_abs, save_abs)
 
+
+   
         tts_duration=get_duration(path=save_path) if os.path.exists(save_path) else 0.0
         gap=tts_duration-actual_duration
         if gap>0:
