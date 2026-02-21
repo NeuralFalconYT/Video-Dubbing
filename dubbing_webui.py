@@ -101,7 +101,7 @@ def extract_speakers_ui(media_file, have_music, llm_result_text,redub,language_n
     progress(1, desc="Extraction Complete!")
 
     if language_name == "Hindi" and len(speaker_voice) == 1:
-        src_voice = "./assets/voice/hindi/male/bobby_male_hindi.wav"
+        src_voice = "./assets/voice/hindi/male/male_hindi.wav"
         dst_dir = "./speaker_voice"
         dst_voice = os.path.join(dst_dir, "0.wav")
         if os.path.exists(src_voice):
