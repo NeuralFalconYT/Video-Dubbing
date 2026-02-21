@@ -224,8 +224,7 @@ Based on the implementation by **[@rafaelgalle](https://github.com/rafaelgalle)*
 Used for multilingual text-to-speech and voice cloning.
 🔗 [https://github.com/resemble-ai/chatterbox](https://github.com/resemble-ai/chatterbox)
 
----
-Here’s a clean, professional **credit section** acknowledging Chatterbox and emphasizing that your project depends on it:
+
 
 ---
 
