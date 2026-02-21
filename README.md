@@ -238,18 +238,44 @@ Chatterbox provides the core text-to-speech and voice cloning capabilities that 
 
 🔗 [https://github.com/resemble-ai/chatterbox](https://github.com/resemble-ai/chatterbox)
 
+
+
 ---
 
+## ⚠️ Disclaimer
 
-# ⚠️ Disclaimer
-
-This project uses AI-based voice cloning & dubbing technologies.
+This project uses AI-based voice cloning and dubbing technologies.
 Users **must** follow responsible and ethical usage guidelines:
 
-* Do **not** impersonate individuals without permission.
-* Do **not** create deceptive or harmful content.
-* Respect **privacy**, **copyright**, and **local laws**.
+* **Do not impersonate individuals without permission.**
+* **Do not create deceptive, illegal, or harmful content.**
+* Respect **privacy, copyright, and applicable laws** in your region.
 * You are fully responsible for how you use this tool.
 
+**The developer of this project is not responsible for any misuse, legal issues, or consequences resulting from how this software is used.**
 
+
+
+---
+
+## 🔮 Future Improvements (Ongoing)
+
+This project will continue evolving as newer and better AI models become available.
+The goal is to steadily improve dubbing quality, realism, and usability.
+
+### 🚀 Planned Improvements
+
+* **Latest Voice Cloning Models**
+  Upgrade to newer voice cloning systems to improve speaker similarity, naturalness, and multilingual stability.
+
+* **Improved Speech-to-Text (STT)**
+  Adopt newer transcription models for better subtitle accuracy and cleaner input for the dubbing pipeline.
+
+* **Audio Synchronization Enhancements**
+  The current sync pipeline still needs improvement for more natural speech timing and lip-sync accuracy.
+
+### 🤝 Community Contributions Welcome
+
+At the moment, I don’t have a perfect solution for improving synchronization quality.
+If you have ideas, research insights, or better approaches, **contributions, suggestions, and collaborations are highly welcome.**
 
