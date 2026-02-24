@@ -7,6 +7,7 @@ import os
 import shutil
 from dubbing_pipeline import dubbing,make_video
 from utils import get_dubbing_json,get_speakers,restore_music, add_gender_to_speakers
+from find_voice import get_voice_name
 
 from tts import supported_languages
 MAX_SPEAKERS = 10
@@ -226,6 +227,7 @@ def start_dubbing_ui(
       
     if voice_model in ["Kokoro","Edge TTS"] and redub==False:
       updated_speaker_voice=add_gender_to_speakers(updated_speaker_voice)
+      updated_speaker_voice=get_voice_name(updated_speaker_voice, language=language_name,voice_model=voice_model)
     elif voice_model in ["Kokoro","Edge TTS"] and redub==True:
       curr_dir=os.getcwd()
       json_path = os.path.join(curr_dir, "json_input.json")
