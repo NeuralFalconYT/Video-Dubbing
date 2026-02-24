@@ -3,7 +3,9 @@
 # %%writefile /content/Video-Dubbing/whisper_diarization_webui.py
 from whisper_diarization import process_media,LANGUAGE_CODE
 import gradio as gr
-source_lang_list = ['Automatic', "English", "Hindi", "Bengali"]
+# source_lang_list = ['Automatic', "English", "Hindi", "Bengali]
+source_lang_list = ["English", "Hindi", "Bengali"]
+
 available_language = LANGUAGE_CODE.keys()
 source_lang_list.extend(available_language)
 
@@ -76,11 +78,11 @@ def transcript_ui():
             outputs=[media_file,json_file, transcript_box,llm_translate]
         )
 
-        input_lang.change(
-            fn=update_target_lang,
-            inputs=input_lang,
-            outputs=output_lang
-        )
+        # input_lang.change(
+        #     fn=update_target_lang,
+        #     inputs=input_lang,
+        #     outputs=output_lang
+        # )
 
 
     return demo
