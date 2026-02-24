@@ -483,6 +483,122 @@ def get_speakers(media_file,it_has_backgroud_music,json_data):
 # dubbing_json=get_dubbing_json(json_data, silence_threshold=0.6, max_merged_duration=10.0)
 # speaker_voice=default_speaker_voice
 
+
+
+
+
+def add_gender_to_speakers(speaker_voice):
+    """
+    ✔ If only 1 speaker → assign 'female'
+    ✔ If model fails → assign 'female'
+    ✔ If prediction fails → assign 'female'
+    ✔ Never crashes
+    ✔ Always cleans memory
+    """
+
+    # ---------- Single speaker shortcut ----------
+    if len(speaker_voice) == 1:
+        for spk_id in speaker_voice:
+            speaker_voice[spk_id]["gender"] = "female"
+        print("✅ Single speaker → default female assigned.")
+        return speaker_voice
+
+    import gc
+    import torch
+
+    TARGET_SR = 16000
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # Default everyone to female first (safety net)
+    for spk_id in speaker_voice:
+        speaker_voice[spk_id]["gender"] = "female"
+
+    processor = None
+    model = None
+
+    # ---------- Load model safely ----------
+    try:
+        from transformers import Wav2Vec2Processor, AutoModelForAudioClassification
+        import torchaudio
+        import soundfile as sf
+
+        print("🔁 Loading gender model...")
+
+        processor = Wav2Vec2Processor.from_pretrained(
+            "facebook/wav2vec2-base-960h"
+        )
+
+        model = AutoModelForAudioClassification.from_pretrained(
+            "prithivMLmods/Common-Voice-Gender-Detection"
+        ).eval().to(device)
+
+        print("✅ Model loaded.")
+
+    except Exception as e:
+        print("⚠️ Model load failed → using default female.")
+        return speaker_voice  # already female
+
+    # ---------- Prediction loop ----------
+    for spk_id, info in speaker_voice.items():
+        audio_path = info.get("reference_audio")
+
+        if not audio_path:
+            continue  # keep female
+
+        try:
+            waveform_np, sr = sf.read(audio_path, dtype="float32")
+
+            if waveform_np.ndim > 1:
+                waveform_np = waveform_np.mean(axis=1)
+
+            waveform = torch.tensor(waveform_np).unsqueeze(0)
+
+            if sr != TARGET_SR:
+                resampler = torchaudio.transforms.Resample(sr, TARGET_SR)
+                waveform = resampler(waveform)
+
+            inputs = processor(
+                waveform.squeeze().numpy(),
+                sampling_rate=TARGET_SR,
+                return_tensors="pt",
+                padding=True,
+            ).to(device)
+
+            with torch.no_grad():
+                logits = model(**inputs).logits
+                pred_id = torch.argmax(logits, dim=-1).item()
+
+            label = model.config.id2label[pred_id].lower()
+
+            # Overwrite default female only if prediction succeeds
+            speaker_voice[spk_id]["gender"] = label
+
+        except Exception as e:
+            print(f"⚠️ Prediction failed for speaker {spk_id} → keeping female.")
+            # stays female
+
+    # ---------- Cleanup ----------
+    print("🧹 Cleaning model memory...")
+
+    try:
+        del model
+        del processor
+    except:
+        pass
+
+    gc.collect()
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    print("✅ Cleanup done.")
+
+    return speaker_voice
+
+
+
+
+
 def get_media_duration(media_file=None):
     """
     Get the exact playback duration (in seconds) of any audio or video file,
