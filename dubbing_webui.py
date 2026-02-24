@@ -178,13 +178,43 @@ def create_zip_from_video(
     return zip_path
 
 
+
+
+
+def get_voice_model(model_name: str, language_name: str) -> str:
+    chatterbox_multilingual_lang_support = [
+        "Arabic","Danish","German","Greek","English","Spanish","Finnish","French","Hebrew","Hindi",
+        "Italian","Japanese","Korean","Malay","Dutch","Norwegian","Polish","Portuguese","Russian",
+        "Swedish","Swahili","Turkish","Chinese"
+    ]
+
+    chatterbox_turbo_lang_support = ["English", "Hindi"]
+
+    kokoro_lang_support = [
+        "English","Hindi","Spanish","French","Italian","Portuguese","Japanese","Chinese"
+    ]
+
+    if model_name == "Chatterbox Multilingual":
+        return model_name if language_name in chatterbox_multilingual_lang_support else "Edge TTS"
+
+    if model_name == "Chatterbox Turbo":
+        return model_name if language_name in chatterbox_turbo_lang_support else "Edge TTS"
+
+    if model_name == "Kokoro":
+        return model_name if language_name in kokoro_lang_support else "Edge TTS"
+
+    return model_name
+
+
+
 # --- FIXED FUNCTION ---
 def start_dubbing_ui(
     media_file, language_name, have_music, want_subtitle, llm_result_text
     ,need_video,recover_audio,redub,
     dubbing_json_state, speaker_voice_state,voice_model,
     *speaker_audios
-):
+):  
+    voice_model=get_voice_model(voice_model,language_name) 
     if not dubbing_json_state or not speaker_voice_state:
         raise gr.Error("Please extract speakers first before starting the dubbing process.")
 
@@ -235,7 +265,7 @@ def start_dubbing_ui(
           with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
           updated_speaker_voice=data['speaker_voice']
-        
+       
     dubbed_audio_path, dubbed_audio_file, returned_custom_srt, returned_default_srt, returned_word_srt, returned_shorts_srt ,redubbing_prompt= dubbing(
         media_file=media_file,
         dubbing_json=dubbing_json_state,
