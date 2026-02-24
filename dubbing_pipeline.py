@@ -376,7 +376,7 @@ def srt_to_dub(
             reference_audio = spk_info.get("voice_name", "")
         else:
             reference_audio = spk_info.get("reference_audio", "")
-        print(reference_audio)   
+        # print(reference_audio)   
         fixed_seed = spk_info.get("fixed_seed", 0)
         avg_speed = spk_info.get("avg_talk_speed", 1.0)
         seed_num_input=fixed_seed
