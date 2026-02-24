@@ -355,7 +355,7 @@ def dubbing_ui():
           with gr.Column(scale=1):
               gr.Markdown("### ⚙️ Inputs & Settings")
               media_file = gr.Textbox(label="Paste Media File Path",placeholder="/tmp/gradio/.....")
-              language_name = gr.Dropdown(supported_languages), label="🌍 Select Language", value="Hindi")
+              language_name = gr.Dropdown(supported_languages, label="🌍 Select Language", value="Hindi")
               have_music = gr.Checkbox(value=True, label="Clean speaker voice from media file?")
               llm_result = gr.Textbox(label="Paste LLM Translation", max_lines=10)
               generate_speaker_btn = gr.Button("🚀 Step 1: Extract Speakers [Wait for a minutes]", variant="primary")
