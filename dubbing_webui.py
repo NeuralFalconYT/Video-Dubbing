@@ -77,7 +77,7 @@ def extract_speakers_ui(media_file, voice_model, llm_result_text,redub,language_
             if os.path.exists(json_path):
                 redub_input=json.loads(llm_result_text)
                 dubbing_json=make_json_for_redub(json_path,redub_input)
-                dubbing_json=llm_data
+                # dubbing_json=llm_data
         speaker_ids = sorted(list(set(int(item["speaker_id"]) for item in dubbing_json.values())))
             
     except (json.JSONDecodeError, KeyError, TypeError) as e:
