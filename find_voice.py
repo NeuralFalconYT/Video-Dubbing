@@ -1,7 +1,4 @@
 def get_edge_tts_voices(speaker_voice, language="English"):
-    # Dictionary mapping Language Names to arrays of Edge TTS ShortNames.
-    # The first item in each array [0] is the specific voice from your requested lists.
-    # Subsequent items are the extra voices available for that language from the original dump.
     edge_voice_list = {
         'Afrikaans': {'female': ['af-ZA-AdriNeural'], 'male': ['af-ZA-WillemNeural']},
         'Albanian': {'female': ['sq-AL-AnilaNeural'], 'male': ['sq-AL-IlirNeural']},
@@ -116,131 +113,129 @@ def get_edge_tts_voices(speaker_voice, language="English"):
         'Zulu': {'female': ['zu-ZA-ThandoNeural'], 'male': ['zu-ZA-ThembaNeural']}
     }
 
+    # FALLBACK: If language is not found, default to English
     if language not in edge_voice_list:
-        raise ValueError(f"Language '{language}' not recognized. Please provide a supported language name.")
+        print(f"Warning: Edge TTS language '{language}' not found. Defaulting to English.")
+        language = "English"
 
     female_list = edge_voice_list[language]["female"]
     male_list = edge_voice_list[language]["male"]
 
+    # FALLBACK: If language exists but list is empty (e.g. Faroese), fallback to English lists
+    if not female_list:
+        female_list = edge_voice_list["English"]["female"]
+    if not male_list:
+        male_list = edge_voice_list["English"]["male"]
+
     female_idx = 0
     male_idx = 0
-    # tts_voice_name = {}
 
     for spk_id, meta in speaker_voice.items():
         gender = meta.get("gender", "").lower()
 
+        # FALLBACK: If gender is unknown/missing, default to female
+        if gender not in ["female", "male"]:
+            print(f"Warning: Unknown gender '{gender}' for speaker {spk_id}. Defaulting to female.")
+            gender = "female"
+
         if gender == "female":
-            if not female_list:
-                raise ValueError(f"No female Edge TTS voices available for {language}")
-            # Assigns index 0 first, then cycles through extra voices if available
             voice = female_list[female_idx % len(female_list)]
             female_idx += 1
-
         elif gender == "male":
-            if not male_list:
-                raise ValueError(f"No male Edge TTS voices available for {language}")
-            # Assigns index 0 first, then cycles through extra voices if available
             voice = male_list[male_idx % len(male_list)]
             male_idx += 1
 
-        else:
-            raise ValueError(f"Unknown gender for speaker {spk_id}")
+        speaker_voice[spk_id]['voice_name'] = voice
 
-        # tts_voice_name[spk_id] = voice
-        speaker_voice[spk_id]['voice_name']=voice
     return speaker_voice
 
 
 
 def get_kokoro_tts_voices(speaker_voice, language="English"):
     kokoro_voice_list = {
-    "English": {
-        "female": [
-            "af_heart", "af_bella", "af_nicole", "af_aoede", "af_alloy",
-            "af_kore", "af_sarah", "af_nova", "af_sky", "af_jessica", "af_river"
-        ],
-        "male": [
-            "am_fenrir", "am_michael", "am_puck", "am_echo", "am_eric",
-            "am_liam", "am_onyx", "am_adam", "am_santa"
-        ]
-    },
-
-    # "British English": {
-    #     "female": ["bf_emma", "bf_isabella", "bf_alice", "bf_lily"],
-    #     "male": ["bm_fable", "bm_george", "bm_lewis", "bm_daniel"]
-    # },
-
-    "Spanish": {
-        "female": ["ef_dora"],
-        "male": ["em_alex", "em_santa"]
-    },
-
-    "French": {
-        "female": ["ff_siwis"],
-        "male": ['ff_siwis']
-    },
-
-    "Hindi": {
-        "female": ["hf_alpha", "hf_beta"],
-        "male": ["hm_omega", "hm_psi"]
-    },
-
-    "Italian": {
-        "female": ["if_sara"],
-        "male": ["im_nicola"]
-    },
-
-    "Japanese": {
-        "female": ["jf_alpha", "jf_gongitsune", "jf_nezumi", "jf_tebukuro"],
-        "male": ["jm_kumo"]
-    },
-
-    "Portuguese": {
-        "female": ["pf_dora"],
-        "male": ["pm_alex", "pm_santa"]
-    },
-
-    "Chinese": {
-        "female": ["zf_xiaobei", "zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi"],
-        "male": ["zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang"]
+        "English": {
+            "female": [
+                "af_heart", "af_bella", "af_nicole", "af_aoede", "af_alloy",
+                "af_kore", "af_sarah", "af_nova", "af_sky", "af_jessica", "af_river"
+            ],
+            "male": [
+                "am_fenrir", "am_michael", "am_puck", "am_echo", "am_eric",
+                "am_liam", "am_onyx", "am_adam", "am_santa"
+            ]
+        },
+        "Spanish": {
+            "female": ["ef_dora"],
+            "male": ["em_alex", "em_santa"]
+        },
+        "French": {
+            "female": ["ff_siwis"],
+            "male": ['ff_siwis']
+        },
+        "Hindi": {
+            "female": ["hf_alpha", "hf_beta"],
+            "male": ["hm_omega", "hm_psi"]
+        },
+        "Italian": {
+            "female": ["if_sara"],
+            "male": ["im_nicola"]
+        },
+        "Japanese": {
+            "female": ["jf_alpha", "jf_gongitsune", "jf_nezumi", "jf_tebukuro"],
+            "male": ["jm_kumo"]
+        },
+        "Portuguese": {
+            "female": ["pf_dora"],
+            "male": ["pm_alex", "pm_santa"]
+        },
+        "Chinese": {
+            "female": ["zf_xiaobei", "zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi"],
+            "male": ["zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang"]
+        }
     }
-}
+
+    # FALLBACK: If language is not found, default to English
     if language not in kokoro_voice_list:
-        raise ValueError(f"{language} not supported")
+        print(f"Warning: Kokoro TTS language '{language}' not found. Defaulting to English.")
+        language = "English"
 
     female_list = kokoro_voice_list[language]["female"]
     male_list = kokoro_voice_list[language]["male"]
 
+    # FALLBACK: Fallback to English lists if empty
+    if not female_list:
+        female_list = kokoro_voice_list["English"]["female"]
+    if not male_list:
+        male_list = kokoro_voice_list["English"]["male"]
+
     female_idx = 0
     male_idx = 0
-    tts_voice_name = {}
 
     for spk_id, meta in speaker_voice.items():
         gender = meta.get("gender", "").lower()
 
+        # FALLBACK: If gender is unknown/missing, default to female
+        if gender not in ["female", "male"]:
+            print(f"Warning: Unknown gender '{gender}' for speaker {spk_id}. Defaulting to female.")
+            gender = "female"
+
         if gender == "female":
             voice = female_list[female_idx % len(female_list)]
             female_idx += 1
-
         elif gender == "male":
             voice = male_list[male_idx % len(male_list)]
             male_idx += 1
 
-        else:
-            raise ValueError(f"Unknown gender for speaker {spk_id}")
-
-        speaker_voice[spk_id]['voice_name']=voice
+        speaker_voice[spk_id]['voice_name'] = voice
         
-
     return speaker_voice
 
-def get_voice_name(speaker_voice, language="English",voice_model = "Edge TTS"):
-  if voice_model == "Kokoro":
-    speaker_voice = get_kokoro_tts_voices(speaker_voice, language)
-  elif voice_model == "Edge TTS":
-    speaker_voice = get_edge_tts_voices(speaker_voice, language)
-  return speaker_voice
 
+def get_voice_name(speaker_voice, language="English", voice_model="Edge TTS"):
+    if voice_model == "Kokoro":
+        speaker_voice = get_kokoro_tts_voices(speaker_voice, language)
+    elif voice_model == "Edge TTS":
+        speaker_voice = get_edge_tts_voices(speaker_voice, language)
+    return speaker_voice
 # from find_voice import get_voice_name
 # speaker_voice = {
 #     0: {'reference_audio': './speaker_voice/0.mp3', 'fixed_seed': 44913, 'avg_talk_speed': 1.31, 'gender': 'female'},
