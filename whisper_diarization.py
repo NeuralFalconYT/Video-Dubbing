@@ -135,7 +135,7 @@ def fix_speaker(res, max_check=6, debug=True):
     return res
 
 def speech_to_text(audio_path,language_name=None,number_of_speakers=None,remove_music=True,make_small_segments=True,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
-  result=get_transcript(audio_path,language_name,number_of_speakers,remove_music,make_small_segments)
+  result,used_audio_file=get_transcript(audio_path,language_name,number_of_speakers,remove_music,make_small_segments)
   res=fix_speaker(result, max_check=6, debug=True)
   return res
 
