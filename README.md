@@ -201,21 +201,23 @@ This would produce far more natural and expressive dubbing results.
 
 # 🖼️ App Screenshots
 
-### 1. Normal Voice Clone TTS with Subtitles
 
-![1](https://github.com/user-attachments/assets/64b33aa9-67a6-4c20-8abb-9125699004bb)
+### Step 1: Multi-Speaker Timestamp Extraction + Translation 
+![a](https://github.com/user-attachments/assets/0f70c8ed-b548-4516-b0f7-2ec1ca773a97)
 
-### 2. Multi-Speaker Timestamp Extraction + Translation
-
-![2](https://github.com/user-attachments/assets/ca41d03c-695c-4ad1-8035-edbcae127335)
-
-### 3. Using Google AI Studio(We can use any LLMS) for Prompt-Based Translation
+### Step 2: Using Google AI Studio(Gemini latest model, We can use any LLMS) for Prompt-Based Translation
 
 ![3](https://github.com/user-attachments/assets/42990786-2114-41f5-8891-584fa338ae6e)
 
-### 4. Video Dubbing Output
+### Step 3: Video Dubbing 
 
-![3](https://github.com/user-attachments/assets/0fcf7b60-2af2-48c3-a173-404b4c127678)
+![b](https://github.com/user-attachments/assets/d37f1114-a6b0-4725-9c0e-e017d7c38b1f)
+
+### Step 4: Romanized subtitles if needed
+![c](https://github.com/user-attachments/assets/b86d9730-5775-4ab5-9e55-dd6334ee1d59)
+
+### Step 5: If needed, generate voice with normal TTS and fix the audio manually in editing software.
+![d](https://github.com/user-attachments/assets/c8233477-efc7-44a8-9d8b-2940c2fa1de4)
 
 ---
 
@@ -265,14 +267,14 @@ Users **must** follow responsible and ethical usage guidelines:
 
 ---
 
-## 🔮 Future Improvements (Ongoing)
+## 🔮 Future Improvements 
 
 This project will continue evolving as newer and better AI models become available.
 The goal is to steadily improve dubbing quality, realism, and usability.
 
 ### 🚀 Planned Improvements
 
-* **Latest Voice Cloning Models**
+* **Latest Voice Cloning / TTS Models**
   Upgrade to newer voice cloning systems to improve speaker similarity, naturalness, and multilingual stability.
 
 * **Improved Speech-to-Text (STT)**
