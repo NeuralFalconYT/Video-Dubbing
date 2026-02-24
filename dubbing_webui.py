@@ -56,7 +56,12 @@ def make_json_for_redub(json_path,redub_input):
   return redub_json
 # --- FINAL, IMPROVED FUNCTION with Progress Bar and Disabled Inputs ---
 
-def extract_speakers_ui(media_file, have_music, llm_result_text,redub,language_name, progress=gr.Progress()):
+def extract_speakers_ui(media_file, voice_model, llm_result_text,redub,language_name, progress=gr.Progress()):
+    if voice_model in ["Chatterbox Multilingual", "Chatterbox Turbo"]:
+      have_music=True
+    else:
+      have_music=False
+      
     if not media_file or not os.path.exists(media_file):
         raise gr.Error("Please provide a valid media file path.")
     if not llm_result_text:
@@ -364,7 +369,7 @@ def dubbing_ui():
               #     exaggeration = gr.Slider(0.25, 2, step=.05, label="Exaggeration", value=.5)
               #     cfg_weight = gr.Slider(0.2, 1, step=.05, label="CFG/Pace", value=0.5)
               #     temp = gr.Slider(0.05, 5, step=.05, label="Temperature", value=.8)
-              with gr.Accordion("Voice Clone Model", open=False):
+              with gr.Accordion("Voice Clone Model", open=True):
                 voice_model = gr.Radio(
                         choices=["Chatterbox Multilingual", "Chatterbox Turbo","Kokoro","Edge TTS"],
                         value="Chatterbox Multilingual",
@@ -411,7 +416,7 @@ def dubbing_ui():
 
       generate_speaker_btn.click(
           fn=extract_speakers_ui,
-          inputs=[media_file, have_music, llm_result,redub,language_name],
+          inputs=[media_file, voice_model, llm_result,redub,language_name],
           outputs=[dubbing_json_state, speaker_voice_state, speaker_summary, *speaker_audios]
       )
 
