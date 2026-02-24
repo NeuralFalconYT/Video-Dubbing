@@ -350,9 +350,16 @@ def start_dubbing_ui(
 
 def dubbing_ui():
   with gr.Blocks() as demo:
-      gr.Markdown("# 🎙️ Video Dubbing Pipeline")
-      gr.Markdown("Step 1: Provide your media file and settings. Step 2: Extract speakers. Step 3: Start Dubbing!")
-
+      gr.HTML("""
+      <div style="text-align: center; margin: 20px auto; max-width: 800px;">
+          <h1 style="font-size: 2.5em; margin-bottom: 10px;">
+              🎙️ Video Dubbing Pipeline
+          </h1>
+      
+          <p style="font-size: 1.1em; color: #555;">Step 1: Paste Media File Path &amp; LLM Translation. Step 2: Extract speakers. Step 3: Start Dubbing!
+          </p>
+      </div>
+      """)
       dubbing_json_state = gr.State()
       speaker_voice_state = gr.State()
 
