@@ -1,4 +1,6 @@
+import re
 from sentencex import segment
+
 
 def segment_split(
     final_segments,
@@ -8,19 +10,13 @@ def segment_split(
     allow_same_start_end_merge=True,
     max_chars_merge=120,
 ):
-    """
-    1. Try sentencex-based natural splitting first.
-    2. Fallback to timestamp-based forced split if needed.
-    3. Optionally merge adjacent segments when end==start (if text stays under max_chars_merge).
-    4. Preserve timestamps perfectly for dubbing alignment.
-    """
+
+
     cjk_languages = ("zh", "ja", "ko")
     if language in cjk_languages:
-      max_chars=10
-      max_chars_merge=20
-    # print(f"Language: {language}")
-    # print(f"max_chars {max_chars}")
-    # print(f"max_chars {max_chars_merge}")
+        max_chars = 10
+        max_chars_merge = 20
+
     all_new_segments = []
 
     for seg in final_segments:
@@ -32,7 +28,7 @@ def segment_split(
             all_new_segments.append(seg)
             continue
 
-        # --- Step 1: try sentence-based segmentation
+        # --- Step 1: sentencex segmentation
         if language and len(text) > 20:
             try:
                 sentences = list(segment(language, text))
@@ -41,49 +37,75 @@ def segment_split(
         else:
             sentences = [text]
 
-        # --- Step 2: fallback if too long or not punctuated
+        # --- Step 2: fallback if single long sentence
         if len(sentences) == 1 and len(sentences[0]) > max_chars:
-            all_new_segments.extend(_force_split_by_words(seg, language,max_chars, minimum_gap))
+            all_new_segments.extend(
+                _force_split_by_words(seg, language, max_chars, minimum_gap)
+            )
             continue
 
-        # --- Step 3: build sentence-based subsegments with timestamps
+        # --- Step 3: SAFE sentence-word alignment
         sentence_segments = []
         wi = 0
+
         for sent in sentences:
             sent = sent.strip()
             if not sent:
                 continue
-            sent_words, sent_start, sent_end = [], None, None
+
+            sent_words = []
+            sent_start, sent_end = None, None
+
+            sent_norm = re.sub(r"\s+", "", sent).lower()
+            accumulated = ""
 
             while wi < len(words):
                 w = words[wi]
+
+                clean_word = re.sub(r"\s+", "", w["word"]).lower()
+                accumulated += clean_word
+
                 if sent_start is None:
                     sent_start = w["start"]
+
                 sent_end = w["end"]
                 sent_words.append(w)
                 wi += 1
 
-                # stop roughly when the sentence length matches
-                if len("".join([x["word"] for x in sent_words])) >= len(sent.replace(" ", "")):
+                if accumulated.startswith(sent_norm) or accumulated == sent_norm:
                     break
 
+            if sent_words:
+                sentence_segments.append({
+                    "speaker": speaker,
+                    "start": sent_start,
+                    "end": sent_end,
+                    "text": sent,
+                    "words": sent_words,
+                })
+
+        # --- SAFETY: append leftover words if any
+        if wi < len(words):
+            remaining_words = words[wi:]
             sentence_segments.append({
                 "speaker": speaker,
-                "start": sent_start,
-                "end": sent_end,
-                "text": sent,
-                "words": sent_words,
+                "start": remaining_words[0]["start"],
+                "end": remaining_words[-1]["end"],
+                "text": " ".join(w["word"] for w in remaining_words),
+                "words": remaining_words,
             })
 
-        # --- Step 4: check lengths & fallback-split if necessary
+        # --- Step 4: length checks
         for s in sentence_segments:
             if len(s["text"]) > max_chars:
-                all_new_segments.extend(_force_split_by_words(s, max_chars, minimum_gap))
+                all_new_segments.extend(
+                    _force_split_by_words(s, language, max_chars, minimum_gap)
+                )
             else:
                 s["duration"] = round(s["end"] - s["start"], 3)
                 all_new_segments.append(s)
 
-    # --- Step 5: optional merging for continuous segments
+    # --- Step 5: optional merge
     if allow_same_start_end_merge:
         all_new_segments = _merge_same_boundary_segments(
             all_new_segments,
@@ -96,12 +118,15 @@ def segment_split(
 
 # ---------- helpers ----------
 
-def _force_split_by_words(seg, language,max_chars=90, minimum_gap=0.05):
+
+def _force_split_by_words(seg, language, max_chars=90, minimum_gap=0.05):
     words = seg["words"]
     if not words:
         return [seg]
+
     new_segments = []
     speaker = seg.get("speaker", "SPEAKER_00")
+
     current = {
         "speaker": speaker,
         "start": words[0]["start"],
@@ -120,11 +145,11 @@ def _force_split_by_words(seg, language,max_chars=90, minimum_gap=0.05):
         potential_len = len(current["text"]) + 1 + len(w["word"])
 
         if gap <= minimum_gap and potential_len <= max_chars:
-            # current["text"] += " " + w["word"]
-            if language in ["zh", "ja", "ko"]:  # CJK languages
-                current["text"] += w["word"]   # no space
+            if language in ["zh", "ja", "ko"]:
+                current["text"] += w["word"]
             else:
                 current["text"] += " " + w["word"]
+
             current["end"] = w["end"]
             current["words"].append(w)
         else:
@@ -141,29 +166,30 @@ def _force_split_by_words(seg, language,max_chars=90, minimum_gap=0.05):
     return new_segments
 
 
-def _merge_same_boundary_segments(segments, language,max_chars_merge=120):
-    """Merge consecutive segments where end == next.start and speakers match."""
+
+def _merge_same_boundary_segments(segments, language, max_chars_merge=120):
     if not segments:
         return segments
 
     merged = []
     current = segments[0]
 
-    for i in range(1, len(segments)):
-        nxt = segments[i]
+    for nxt in segments[1:]:
         can_merge = (
-            abs(current["end"] - nxt["start"]) < 1e-3  # exact or near-identical time boundary
+            abs(current["end"] - nxt["start"]) < 1e-3
             and current["speaker"] == nxt["speaker"]
         )
 
         potential_len = len(current["text"]) + 1 + len(nxt["text"])
+
         if can_merge and potential_len <= max_chars_merge:
-            # Merge safely
-            # current["text"] = (current["text"].rstrip() + " " + nxt["text"].lstrip()).strip()
             if language in ["zh", "ja", "ko"]:
-                current["text"] += nxt["text"]  # no space
+                current["text"] += nxt["text"]
             else:
-                current["text"] = (current["text"].rstrip() + " " + nxt["text"].lstrip()).strip()
+                current["text"] = (
+                    current["text"].rstrip() + " " + nxt["text"].lstrip()
+                ).strip()
+
             current["end"] = nxt["end"]
             current["words"].extend(nxt["words"])
         else:
@@ -171,10 +197,11 @@ def _merge_same_boundary_segments(segments, language,max_chars_merge=120):
             merged.append(current)
             current = nxt
 
-    # finalize last
     current["duration"] = round(current["end"] - current["start"], 3)
     merged.append(current)
+
     return merged
+
 # 3️⃣ Call the function
 # from small_segment import segment_split
 # segments = segment_split(
