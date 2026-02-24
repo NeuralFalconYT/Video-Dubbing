@@ -206,6 +206,8 @@ def call_turbo_tts(text, audio_prompt_path, seed_num):
 # =========================
 # KOKORO TTS
 # =========================
+
+
 def run_kokoro_tts(text, language="English", voice="af_heart", speed=1.0):
     global kokoro_pipeline
 
@@ -223,10 +225,6 @@ def run_kokoro_tts(text, language="English", voice="af_heart", speed=1.0):
     }
 
     lang_code = language_map.get(language, "a")
-    if language=="English":
-      voice="af_heart"
-    if language=="Hindi":
-      voice="hf_alpha"
 
     if kokoro_pipeline is None:
         kokoro_pipeline = KPipeline(lang_code=lang_code)
@@ -266,12 +264,12 @@ def run_tts(text, reference_audio, language_name, seed_num, voice_model):
             return call_turbo_tts(text, reference_audio, seed_num)
 
         elif voice_model == "Kokoro":
-            return run_kokoro_tts(text, language=language_name)
+            return run_kokoro_tts(text, language=language_name,voice=reference_audio)
         elif voice_model == "Edge TTS":
             return edge_tts_generate(
                   text=text,
                   language=language_name,
-                  gender="Female",
+                  voice_name=reference_audio,
                   speed=1.0,
               )
 
@@ -308,8 +306,9 @@ def srt_to_dub(
 
     if voice_model=="Chatterbox Turbo" and language_name!="English":
       voice_model="Chatterbox Multilingual"
-
-
+    # tts_voice_dict={}
+    
+        
 
 
     #create folders
@@ -378,11 +377,14 @@ def srt_to_dub(
         # print(f"speaker voice: {speaker_voice}")
         spk_info = speaker_voice.get(speaker_id, {})
         # print(f"spk_info::: {spk_info}")
-        reference_audio = spk_info.get("reference_audio", "")
+        if voice_model in ["Kokoro","Edge TTS"]:
+            reference_audio = spk_info.get("voice_name", "")
+        else:
+            reference_audio = spk_info.get("reference_audio", "")
+            
         fixed_seed = spk_info.get("fixed_seed", 0)
         avg_speed = spk_info.get("avg_talk_speed", 1.0)
         seed_num_input=fixed_seed
-
         if segment_id == last_id:
             ending_silence = max(0, media_duration - end)
         else:
