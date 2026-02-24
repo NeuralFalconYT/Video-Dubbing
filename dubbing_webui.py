@@ -228,7 +228,7 @@ def get_voice_model(model_name: str, language_name: str) -> str:
 
 # --- FIXED FUNCTION ---
 def start_dubbing_ui(
-    media_file, language_name, have_music, want_subtitle, llm_result_text
+    media_file, language_name, want_subtitle, llm_result_text
     ,need_video,recover_audio,redub,
     dubbing_json_state, speaker_voice_state,voice_model,
     *speaker_audios
@@ -368,7 +368,7 @@ def dubbing_ui():
               gr.Markdown("### ⚙️ Inputs & Settings")
               media_file = gr.Textbox(label="Paste Media File Path",placeholder="/tmp/gradio/.....")
               language_name = gr.Dropdown(supported_languages, label="🌍 Select Language", value="Hindi")
-              have_music = gr.Checkbox(value=True, label="Clean speaker voice from media file?")
+              # have_music = gr.Checkbox(value=True, label="Clean speaker voice from media file?")
               llm_result = gr.Textbox(label="Paste LLM Translation", max_lines=10)
               generate_speaker_btn = gr.Button("🚀 Step 1: Extract Speakers [Wait for a minutes]", variant="primary")
 
@@ -430,7 +430,7 @@ def dubbing_ui():
       dubbing_btn.click(
           fn=start_dubbing_ui,
           inputs=[
-              media_file, language_name, have_music, want_subtitle, llm_result,
+              media_file, language_name, want_subtitle, llm_result,
               need_video,recover_audio,redub,
               dubbing_json_state, speaker_voice_state,voice_model,
               *speaker_audios
