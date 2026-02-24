@@ -41,7 +41,7 @@ def transcript_ui():
                         maximum=10,
                         value=0,
                         step=1,
-                        label="Number of Speakers [0 means auto-detect]"
+                        label="Number of Speakers [ 0 means auto-detect ]"
                     )
                 generate_btn = gr.Button("🚀 Generate Transcription", variant="primary")
                 with gr.Accordion("⚙️ Translate Parameter", open=False):
