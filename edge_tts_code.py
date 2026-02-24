@@ -176,7 +176,7 @@ def calculate_rate_string(speed):
 
 
 # ---------- main edge tts function ----------
-def edge_tts_generate(text, language, gender="Female", speed=1.0):
+def edge_tts_generate(text, language, gender="female", speed=1.0):
     """
     Edge TTS CLI wrapper:
     - No async
