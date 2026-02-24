@@ -9,9 +9,23 @@ from dubbing_pipeline import dubbing,make_video
 from utils import get_dubbing_json,get_speakers,restore_music, add_gender_to_speakers
 from find_voice import get_voice_name
 
-from tts import supported_languages
 MAX_SPEAKERS = 10
-
+supported_languages=[
+'English','Hindi','Bengali','Chinese','Albanian', 'Amharic', 'Arabic', 'Azerbaijani', 'Bengali',
+'Bosnian', 'Bulgarian', 'Burmese', 'Catalan', 'Chinese',
+'Croatian', 'Czech', 'Danish', 'Dutch', 'English',
+'Estonian', 'Faroese', 'Finnish', 'French', 'Galician',
+'Georgian', 'German', 'Greek', 'Gujarati', 'Hebrew',
+'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Italian',
+'Japanese', 'Kannada', 'Kazakh', 'Korean', 'Lao',
+'Lithuanian', 'Macedonian', 'Malay', 'Malayalam', 'Maltese',
+'Marathi', 'Mongolian', 'Nepali', 'Norwegian', 'Norwegian Nynorsk',
+'Pashto', 'Persian', 'Polish', 'Portuguese', 'Romanian',
+'Russian', 'Serbian', 'Sinhala', 'Slovak', 'Slovenian',
+'Somali', 'Spanish', 'Sundanese', 'Swahili', 'Swedish',
+'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian',
+'Urdu', 'Uzbek', 'Vietnamese', 'Welsh', 'Zulu'
+]
 
 # --- CORRECTED AND IMPROVED FUNCTION ---
 
@@ -341,7 +355,7 @@ def dubbing_ui():
           with gr.Column(scale=1):
               gr.Markdown("### ⚙️ Inputs & Settings")
               media_file = gr.Textbox(label="Paste Media File Path",placeholder="/tmp/gradio/.....")
-              language_name = gr.Dropdown(list(supported_languages.keys()), label="🌍 Select Language", value="Hindi")
+              language_name = gr.Dropdown(supported_languages), label="🌍 Select Language", value="Hindi")
               have_music = gr.Checkbox(value=True, label="Clean speaker voice from media file?")
               llm_result = gr.Textbox(label="Paste LLM Translation", max_lines=10)
               generate_speaker_btn = gr.Button("🚀 Step 1: Extract Speakers [Wait for a minutes]", variant="primary")
