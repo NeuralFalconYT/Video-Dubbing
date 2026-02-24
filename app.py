@@ -52,12 +52,12 @@ import click
 @click.option("--share", is_flag=True, default=False, help="Enable sharing of the interface.")
 def run_demo(share,debug):
     global custom_css
-    demo1=tts_ui()
-    demo2=turbo_tts_ui()
-    demo3=transcript_ui()
-    demo4=dubbing_ui()
-    demo5=romanize()
-    interface = gr.TabbedInterface([demo1, demo2,demo3,demo4,demo5],["Chatterbox Multilingual TTS","Chatterbox Turbo TTS","Whisper Transcription","Dubbing","Subtitle Romanize"],title="",theme=gr.themes.Soft(),css=custom_css)
+    demo1=transcript_ui()
+    demo2=dubbing_ui()
+    demo3=romanize()
+    demo4=tts_ui()
+    demo5=turbo_tts_ui()
+    interface = gr.TabbedInterface([demo1, demo2,demo3,demo4,demo5],["Step 1: Whisper Transcription","Step 2:Video Dubbing","Subtitle Romanize","Chatterbox Multilingual TTS","Chatterbox Turbo TTS"],title="",theme=gr.themes.Soft(),css=custom_css)
     interface.queue(max_size=10).launch(share=share,debug=debug)
 if __name__ == "__main__":
     run_demo()
