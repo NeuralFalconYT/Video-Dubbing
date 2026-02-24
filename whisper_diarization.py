@@ -137,7 +137,7 @@ def fix_speaker(res, max_check=6, debug=True):
 def speech_to_text(audio_path,language_name=None,number_of_speakers=None,remove_music=True,make_small_segments=True,model_name="deepdml/faster-whisper-large-v3-turbo-ct2"):
   result,used_audio_file=get_transcript(audio_path,language_name,number_of_speakers,remove_music,make_small_segments)
   res=fix_speaker(result, max_check=6, debug=True)
-  return res
+  return res,used_audio_file
 
 def save_json(res):
     try:
@@ -181,7 +181,7 @@ def process_media(media_file,num_speakers,remove_music, make_small_segments,inpu
   json_transcription,readable_json,prompt=None,None,None
   timestamp={}
   try:
-    res = speech_to_text(media_file,language_name=input_lang,number_of_speakers=num_speakers,remove_music=remove_music,make_small_segments=make_small_segments)
+    res,used_audio_file = speech_to_text(media_file,language_name=input_lang,number_of_speakers=num_speakers,remove_music=remove_music,make_small_segments=make_small_segments)
     json_transcription=save_json(res)
     sentence_number=1
     for i in res["segments"]:
