@@ -6,7 +6,7 @@ import json
 import os
 import shutil
 from dubbing_pipeline import dubbing,make_video
-from utils import get_dubbing_json,get_speakers,restore_music
+from utils import get_dubbing_json,get_speakers,restore_music, add_gender_to_speakers
 
 from tts import supported_languages
 MAX_SPEAKERS = 10
@@ -221,6 +221,8 @@ def start_dubbing_ui(
       if os.path.exists(json_path):
         dubbing_json_state=make_json_for_redub(json_path,dubbing_json_state)
     # print(dubbing_json_state)
+    if voice_model in ["Kokoro","Edge TTS"]:
+      updated_speaker_voice=add_gender_to_speakers(updated_speaker_voice)
     dubbed_audio_path, dubbed_audio_file, returned_custom_srt, returned_default_srt, returned_word_srt, returned_shorts_srt ,redubbing_prompt= dubbing(
         media_file=media_file,
         dubbing_json=dubbing_json_state,
