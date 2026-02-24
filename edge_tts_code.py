@@ -176,7 +176,7 @@ def calculate_rate_string(speed):
 
 
 # ---------- main edge tts function ----------
-def edge_tts_generate(text, language, gender="female", speed=1.0):
+def edge_tts_generate(text, language, voice_name="en-US-AvaMultilingualNeural", speed=1.0):
     """
     Edge TTS CLI wrapper:
     - No async
@@ -185,15 +185,15 @@ def edge_tts_generate(text, language, gender="female", speed=1.0):
     """
 
     # pick voice
-    voice = (
-        male_voice_list.get(language)
-        if gender.lower() == "male"
-        else female_voice_list.get(language)
-    )
+    # voice = (
+    #     male_voice_list.get(language)
+    #     if gender.lower() == "male"
+    #     else female_voice_list.get(language)
+    # )
 
-    if not voice:
-        raise ValueError(f"No voice configured for {language}")
-
+    # if not voice:
+    #     raise ValueError(f"No voice configured for {language}")
+    voice=voice_name
     base_path = temp_tts_file_name(text, language)
     mp3_path = base_path + ".mp3"
     wav_path = base_path + ".wav"
