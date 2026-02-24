@@ -33,6 +33,9 @@ def transcript_ui():
         with gr.Row():
             with gr.Column():
                 upload_media = gr.File(label="Upload Audio or Video File")
+                with gr.Row():
+                    input_lang = gr.Dropdown(label="Source Language", choices=source_lang_list, value="English")
+                    output_lang = gr.Dropdown(label="Target Language", choices=target_lang_list, value="English")
                 number_of_speakers = gr.Slider(
                         minimum=0,
                         maximum=10,
@@ -40,32 +43,33 @@ def transcript_ui():
                         step=1,
                         label="Number of Speakers [0 means auto-detect]"
                     )
-                remove_music = gr.Checkbox(label="Clean Audio First", value=True)
-                small_chunk=gr.Checkbox(label="Make Segments Smaller", value=True)
-                input_lang = gr.Dropdown(label="Source Language", choices=source_lang_list, value="English")
                 generate_btn = gr.Button("🚀 Generate Transcription", variant="primary")
-                with gr.Accordion("⚙️ Translate Parameter", open=True):
+                with gr.Accordion("⚙️ Translate Parameter", open=False):
                     method = gr.Radio(
                                       choices=["Don't Translate", "Using Google Translator", "Hunyuan-MT-7B Translator","Google AI Studio"],
                                       value="Google AI Studio",
                                       label="Select Translate Method",
                                   )
-                    output_lang = gr.Dropdown(label="Translate Into", choices=target_lang_list, value="English")
+                    
                     task = gr.Dropdown(
                         ["Translation", "Fix Grammar", "Rewrite","Translate & Rewrite"],
                         label="Select Task",
                         value="Translation",
                     )
+                    remove_music = gr.Checkbox(label="Clean Audio First", value=True)
+                    small_chunk=gr.Checkbox(label="Make Segments Smaller", value=True)
 
 
             with gr.Column():
-              media_file=gr.Textbox(label="Media File Path",show_copy_button=True)
-              json_file = gr.File(label="Json Transcription")
-              transcript_box = gr.Textbox(label="Transcription", lines=5,max_lines=8,show_copy_button=True)
               llm_translate=gr.Textbox(
                                        label="LLM Translation Prompt Copy & Paste this prompt in https://aistudio.google.com/",
                                        lines=5,show_copy_button=True)
 
+              with gr.Accordion("📁 Additional Information", open=False):
+                  media_file=gr.Textbox(label="Media File Path",show_copy_button=True)
+                  json_file = gr.File(label="Json Transcription")
+                  transcript_box = gr.Textbox(label="Transcription", lines=5,max_lines=8,show_copy_button=True)
+              
         generate_btn.click(
             fn=process_media,
             inputs=[upload_media,number_of_speakers,remove_music, small_chunk,input_lang, output_lang,method,task],
