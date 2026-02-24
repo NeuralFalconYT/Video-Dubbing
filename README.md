@@ -2,7 +2,7 @@
 
 # 🎙️ Video-Dubbing (Multi-Speaker AI Dubbing System)
 
-Run complete AI dubbing pipelines with **speaker diarization**, **voice cloning**, **translation**, **rewriting**, **grammar correction**, **translation & rewriting**, **background restoration**, and **automatic subtitles**  with support for **multi-speaker videos** and dubbing in 🌐 **23 languages**. 
+Run complete AI dubbing pipelines with **speaker diarization**, **voice cloning**, **translation**, **rewriting**, **grammar correction**, **translation & rewriting**, **background restoration**, and **automatic subtitles**  with support for **multi-speaker videos** and dubbing in 🌍 70 languages. (Audio synchronization quality needs improvement.)
 
 ---
 
@@ -22,7 +22,10 @@ Run the full pipeline on a **free T4 GPU**:
 ---
 
 # ✨ Features
-## 🌐 Supports 23 languages
+## 🌐 Supports **70 languages**:
+
+- 🎙 **23 languages — Voice Cloning support**
+- 🔊 **47 languages — Standard Text-to-Speech (TTS)**
 
 ## 🎧 Voice & Audio Processing
 ### **• Normal Voice Cloning with Subtitles**
@@ -103,30 +106,34 @@ Local GPU-friendly multilingual translation model.
 Simple API-based translation.
 🔗 [https://pypi.org/project/googletrans/](https://pypi.org/project/googletrans/)
 
-### **7. Chatterbox Multilingual TTS — Voice Cloning**
+### **7. Chatterbox Multilingual TTS & Turbo for Voice Cloning**
 
 Generate cloned voices and multilingual synthetic speech.
 🔗 [https://github.com/resemble-ai/chatterbox](https://github.com/resemble-ai/chatterbox)
 
-### **8. FFmpeg — Audio/Video Processing**
+### **8. Use Edge TTS and Kokoro for broader language support**
+🔗 [https://pypi.org/project/edge-tts/](https://pypi.org/project/edge-tts/)
+🔗 [https://github.com/hexgrad/kokoro](https://github.com/hexgrad/kokoro)
+
+### **9. FFmpeg — Audio/Video Processing**
 
 Trimming, merging, format conversion, audio mixing.
 🔗 [https://www.ffmpeg.org/](https://www.ffmpeg.org/)
 
-### **9. Python 3.11 & Supporting Libraries**
+### **10. Python 3.11 & Supporting Libraries**
 
 Logic, processing, audio manipulation, ML pipelines.
 
-### **10. Gradio — User Interface**
+### **11. Gradio — User Interface**
 
 Builds the interactive web UI for your application.
 🔗 [https://www.gradio.app/](https://www.gradio.app/)
 
-### **11. Google Colab (Free T4 GPU)**
+### **12. Google Colab (Free T4 GPU)**
 
 Run the full dubbing system on free cloud GPU.
 
-### **12. ChatGPT — Code Assistance & Logic Refinement**
+### **13. ChatGPT — Code Assistance & Logic Refinement**
 
 Helpful for debugging, writing utilities, and optimizing logic.
 
