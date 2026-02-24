@@ -24,7 +24,7 @@ def atempo_chain(factor):
     return ",".join(parts)
 
 def change_speed(input_file, output_file, speedup_factor):
-    print(f"{input_file} {speedup_factor}")
+    # print(f"{input_file} {speedup_factor}")
     try:
         command = [
             "ffmpeg", "-i", input_file,
@@ -35,13 +35,13 @@ def change_speed(input_file, output_file, speedup_factor):
         # print(" ".join(command))
         subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as e:
-        print(f"⚠️ FFmpeg speedup error: {e}. Falling back to Librosa.")
+        # print(f"⚠️ FFmpeg speedup error: {e}. Falling back to Librosa.")
         try:
             y, sr = librosa.load(input_file, sr=TARGET_SR)
             y_stretched = librosa.effects.time_stretch(y, rate=speedup_factor)
             sf.write(output_file, y_stretched, TARGET_SR)
         except Exception as e_librosa:
-            print(f"⚠️ Librosa speedup failed: {e_librosa}. Copying original file.")
+            # print(f"⚠️ Librosa speedup failed: {e_librosa}. Copying original file.")
             shutil.copy(input_file, output_file)
 
 def remove_edge_silence(input_path, output_path, top_db=30):
@@ -91,11 +91,11 @@ def dubbing_algorithm(segments_data, final_audio_save_path):
         starting_silence_s = segment['starting_silence']
 
         if not os.path.exists(tts_path):
-            print(f"⚠️ WARNING: TTS file not found for segment {i+1}: {tts_path}. Skipping.")
+            # print(f"⚠️ WARNING: TTS file not found for segment {i+1}: {tts_path}. Skipping.")
             continue
 
         if actual_duration <= 0.1:
-            print(f"⚠️ WARNING: Segment {i+1} has near-zero duration ({actual_duration}s). Skipping.")
+            # print(f"⚠️ WARNING: Segment {i+1} has near-zero duration ({actual_duration}s). Skipping.")
             continue
 
         # --- Stage 1–3: Process segment ---
@@ -120,7 +120,7 @@ def dubbing_algorithm(segments_data, final_audio_save_path):
         capped = False
 
         if speedup_factor < MIN_SPEED:
-            print(f"⚠️ Segment {i+1}: Capping slow-down {speedup_factor:.2f}x → {MIN_SPEED:.2f}x")
+            # print(f"⚠️ Segment {i+1}: Capping slow-down {speedup_factor:.2f}x → {MIN_SPEED:.2f}x")
             capped = True
             speedup_factor = MIN_SPEED
 
@@ -128,11 +128,11 @@ def dubbing_algorithm(segments_data, final_audio_save_path):
         small_max_speed = 2.5   # only for very short segments
         SMALL_DURATION = 1.3   # seconds
         if speedup_factor > small_max_speed and actual_duration <= SMALL_DURATION:
-           print(f"⚠️ Skipping segment {i+1}: required speed {speedup_factor:.2f}× exceeds short-segment limit ({small_max_speed:.2f}×). Silence inserted.")
+           # print(f"⚠️ Skipping segment {i+1}: required speed {speedup_factor:.2f}× exceeds short-segment limit ({small_max_speed:.2f}×). Silence inserted.")
            make_silence(actual_duration, final_timed_path)
         # Too aggressive → skip speech
         elif speedup_factor > MAX_SPEED:
-           print(f"⚠️ Skipping segment {i+1}: required speed {speedup_factor:.2f}× exceeds safe limit ({MAX_SPEED:.2f}×). Silence inserted.")
+           # print(f"⚠️ Skipping segment {i+1}: required speed {speedup_factor:.2f}× exceeds safe limit ({MAX_SPEED:.2f}×). Silence inserted.")
            make_silence(actual_duration, final_timed_path)
         # Normal Speed Up    
         elif abs(speedup_factor - 1.0) > 0.01:
