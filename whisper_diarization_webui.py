@@ -61,12 +61,12 @@ def transcript_ui():
 
 
             with gr.Column():
+              media_file=gr.Textbox(label="Copy & Paste Media File Path",show_copy_button=True)
               llm_translate=gr.Textbox(
                                        label="LLM Translation Prompt Copy & Paste this prompt in https://aistudio.google.com/",
                                        lines=5,show_copy_button=True)
 
               with gr.Accordion("📁 Additional Information", open=False):
-                  media_file=gr.Textbox(label="Media File Path",show_copy_button=True)
                   json_file = gr.File(label="Json Transcription")
                   transcript_box = gr.Textbox(label="Transcription", lines=5,max_lines=8,show_copy_button=True)
               
